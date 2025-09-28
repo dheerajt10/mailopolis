@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mailopolis - Adversarial Sustainability Game</title>
+    <meta name="description" content="Compete against AI adversaries to maximize city sustainability in this immersive strategy game">
+    
+    <!-- Preload critical fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+    <!-- Add some basic styling for loading -->
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: #0a0a0f;
+        color: #ffffff;
+        font-family: 'Rajdhani', sans-serif;
+        overflow: hidden;
+      }
+      
+      #loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        transition: opacity 0.5s ease;
+      }
+      
+      .loading-title {
+        font-family: 'Orbitron', monospace;
+        font-size: 3rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        color: #00ffff;
+        text-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+        margin-bottom: 2rem;
+        animation: pulse-glow 2s ease-in-out infinite alternate;
+      }
+      
+      .loading-subtitle {
+        font-size: 1.2rem;
+        color: #8b5cf6;
+        margin-bottom: 3rem;
+        text-align: center;
+      }
+      
+      .loading-spinner {
+        width: 60px;
+        height: 60px;
+        border: 3px solid rgba(0, 255, 255, 0.1);
+        border-top: 3px solid #00ffff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      @keyframes pulse-glow {
+        0% { text-shadow: 0 0 5px rgba(0, 255, 255, 0.5); }
+        100% { text-shadow: 0 0 20px rgba(0, 255, 255, 1), 0 0 30px rgba(0, 255, 255, 0.8); }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+      <h1 class="loading-title">Mailopolis</h1>
+      <p class="loading-subtitle">Adversarial Sustainability Game<br>Initializing Neural Networks...</p>
+      <div class="loading-spinner"></div>
+    </div>
+    
+    <!-- React Root -->
+    <div id="root"></div>
+    
+    <!-- Hide loading screen once React is ready -->
+    <script>
+      // Hide loading screen after a minimum time
+      setTimeout(() => {
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+          loadingScreen.style.opacity = '0';
+          setTimeout(() => {
+            loadingScreen.remove();
+          }, 500);
+        }
+      }, 2000);
+    </script>
+    
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
