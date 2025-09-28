@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiService, PersonalitiesResponse } from '../services/api';
 import './CityMap.css';
 
 interface BuildingProps {
@@ -61,242 +62,123 @@ const ConnectionLine: React.FC<{
 	/>
 );
 
-export const CityMap: React.FC = () => {
-	const [activeBuilding, setActiveBuilding] = useState<string | null>(null);
-	const [buildingStatuses, setBuildingStatuses] = useState<
-		Record<string, 'active' | 'warning' | 'crisis'>
-	>({
-		'power@': 'warning',
-		'mayor@': 'crisis',
-		'emergency@': 'active',
-		'police@': 'active',
-		'transit@': 'warning',
-		'karen@': 'crisis',
-		'bob@': 'active',
-	});
+export const CityMap: React.FC<{ onOpenInbox?: (agentName: string, display?: string) => void }> = ({ onOpenInbox }) => {
+    const [activeBuilding, setActiveBuilding] = useState<string | null>(null);
+    const [buildings, setBuildings] = useState<Array<{
+        id: string;
+        type: string;
+        position: { x: number; y: number };
+        size: { width: number; height: number };
+        agent: string;
+        label: string;
+        emoji: string;
+        status?: 'active' | 'warning' | 'crisis';
+    }>>([]);
 
-	const buildings = [
-		{
-			id: 'power-plant',
-			type: 'power-plant',
-			position: { x: 20, y: 50 },
-			size: { width: 140, height: 120 },
-			agent: 'power@',
-			label: 'POWER PLANT',
-			emoji: '⚡',
-			status: buildingStatuses['power@'],
-		},
-		{
-			id: 'city-hall',
-			type: 'city-hall',
-			position: { x: 340, y: 200 },
-			size: { width: 120, height: 100 },
-			agent: 'mayor@',
-			label: 'CITY HALL',
-			emoji: '🏛️',
-			status: buildingStatuses['mayor@'],
-		},
-		{
-			id: 'hospital',
-			type: 'hospital',
-			position: { x: 480, y: 80 },
-			size: { width: 100, height: 80 },
-			agent: 'emergency@',
-			label: 'HOSPITAL',
-			emoji: '🏥',
-			status: buildingStatuses['emergency@'],
-		},
-		{
-			id: 'police',
-			type: 'police',
-			position: { x: 620, y: 200 },
-			size: { width: 90, height: 70 },
-			agent: 'police@',
-			label: 'POLICE',
-			emoji: '👮',
-			status: buildingStatuses['police@'],
-		},
-		{
-			id: 'transit-hub',
-			type: 'transit-hub',
-			position: { x: 50, y: 350 },
-			size: { width: 110, height: 90 },
-			agent: 'transit@',
-			label: 'TRANSIT HUB',
-			emoji: '🚌',
-			status: buildingStatuses['transit@'],
-		},
-		{
-			id: 'shop1',
-			type: 'commercial',
-			position: { x: 420, y: 360 },
-			size: { width: 80, height: 60 },
-			agent: 'business@',
-			label: 'SHOP',
-			emoji: '🏢',
-		},
-		{
-			id: 'shop2',
-			type: 'commercial',
-			position: { x: 520, y: 360 },
-			size: { width: 80, height: 60 },
-			agent: 'business@',
-			label: 'MALL',
-			emoji: '🏪',
-		},
-		{
-			id: 'office1',
-			type: 'commercial',
-			position: { x: 280, y: 350 },
-			size: { width: 80, height: 60 },
-			agent: 'business@',
-			label: 'OFFICE',
-			emoji: '🏢',
-		},
-		{
-			id: 'house1',
-			type: 'house',
-			position: { x: 220, y: 60 },
-			size: { width: 60, height: 50 },
-			agent: 'karen@',
-			label: "KAREN'S HOUSE",
-			emoji: '🏠',
-			status: buildingStatuses['karen@'],
-		},
-		{
-			id: 'house2',
-			type: 'house',
-			position: { x: 300, y: 60 },
-			size: { width: 60, height: 50 },
-			agent: 'bob@',
-			label: "BOB'S HOUSE",
-			emoji: '🏠',
-			status: buildingStatuses['bob@'],
-		},
-		{
-			id: 'house3',
-			type: 'house',
-			position: { x: 520, y: 200 },
-			size: { width: 60, height: 50 },
-			agent: 'citizen@',
-			label: 'RESIDENCE',
-			emoji: '🏠',
-		},
-		{
-			id: 'house4',
-			type: 'house',
-			position: { x: 680, y: 120 },
-			size: { width: 60, height: 50 },
-			agent: 'citizen@',
-			label: 'RESIDENCE',
-			emoji: '🏠',
-		},
-		{
-			id: 'house5',
-			type: 'house',
-			position: { x: 220, y: 460 },
-			size: { width: 60, height: 50 },
-			agent: 'citizen@',
-			label: 'RESIDENCE',
-			emoji: '🏠',
-		},
-		{
-			id: 'house6',
-			type: 'house',
-			position: { x: 300, y: 460 },
-			size: { width: 60, height: 50 },
-			agent: 'citizen@',
-			label: 'RESIDENCE',
-			emoji: '🏠',
-		},
-		{
-			id: 'house7',
-			type: 'house',
-			position: { x: 480, y: 480 },
-			size: { width: 60, height: 50 },
-			agent: 'citizen@',
-			label: 'RESIDENCE',
-			emoji: '🏠',
-		},
-		{
-			id: 'house8',
-			type: 'house',
-			position: { x: 620, y: 320 },
-			size: { width: 60, height: 50 },
-			agent: 'citizen@',
-			label: 'RESIDENCE',
-			emoji: '🏠',
-		},
-		{
-			id: 'house9',
-			type: 'house',
-			position: { x: 700, y: 400 },
-			size: { width: 60, height: 50 },
-			agent: 'citizen@',
-			label: 'RESIDENCE',
-			emoji: '🏠',
-		},
-		{
-			id: 'park1',
-			type: 'park',
-			position: { x: 160, y: 200 },
-			size: { width: 80, height: 80 },
-			agent: '',
-			label: 'CENTRAL PARK',
-			emoji: '🌳',
-		},
-		{
-			id: 'park2',
-			type: 'park',
-			position: { x: 650, y: 480 },
-			size: { width: 60, height: 60 },
-			agent: '',
-			label: 'EAST PARK',
-			emoji: '🌲',
-		},
-	];
+    const getBuildingConfig = (department: string, index: number, total: number) => {
+        const departmentConfigs: Record<string, { type: string; emoji: string }> = {
+            Energy: { type: 'power-plant', emoji: '⚡' },
+            Mayor: { type: 'city-hall', emoji: '🏛️' },
+            Transportation: { type: 'transit-hub', emoji: '🚌' },
+            Housing: { type: 'commercial', emoji: '🏢' },
+            Waste: { type: 'commercial', emoji: '♻️' },
+            Water: { type: 'commercial', emoji: '💧' },
+            EconomicDevelopment: { type: 'commercial', emoji: '💰' },
+            Citizens: { type: 'house', emoji: '🏠' },
+            BadActors: { type: 'commercial', emoji: '👹' },
+        };
+        const config = departmentConfigs[department] || { type: 'commercial', emoji: '🏢' };
+        const cols = Math.ceil(Math.sqrt(total));
+        const row = Math.floor(index / cols);
+        const col = index % cols;
+        const spacing = 180;
+        const startX = 30;
+        const startY = 30;
+        const verticalVariation = (index * 23) % 60 - 30;
+        const baseY = startY + row * spacing;
+        const variedY = Math.max(30, Math.min(600, baseY + verticalVariation));
+        const baseX = startX + col * spacing;
+        const variedX = Math.max(30, Math.min(800, baseX));
+        return {
+            ...config,
+            position: { x: variedX, y: variedY },
+            size: {
+                width: config.type === 'power-plant' ? 140 : config.type === 'city-hall' ? 120 : config.type === 'transit-hub' ? 110 : 80,
+                height: config.type === 'power-plant' ? 120 : config.type === 'city-hall' ? 100 : config.type === 'transit-hub' ? 90 : 60,
+            },
+        };
+    };
 
-	const handleBuildingClick = (agent: string) => {
-		setActiveBuilding(agent);
-		console.log(`Clicked on ${agent}`);
-	};
+    useEffect(() => {
+        const fetchPersonalities = async () => {
+            try {
+                const response: PersonalitiesResponse = await apiService.getPersonalities();
+                const entries = Object.entries(response.personalities);
+                const generated: typeof buildings = [];
+                entries.forEach(([department, personality], index) => {
+                    const config = getBuildingConfig(department, index, entries.length);
+                    // Use the agent's human name; backend inboxes are keyed by this
+                    const agentLookup = (personality as any).name as string;
+                    const { sustainability_focus, corruption_resistance } = personality.traits as any;
+                    const status: 'active' | 'warning' | 'crisis' =
+                        sustainability_focus >= 80 && corruption_resistance >= 80
+                            ? 'active'
+                            : sustainability_focus >= 60 && corruption_resistance >= 60
+                            ? 'warning'
+                            : 'crisis';
+                    generated.push({
+                        id: `${department.toLowerCase()}-building`,
+                        type: config.type,
+                        position: config.position,
+                        size: config.size,
+                        agent: agentLookup,
+                        label: personality.role.toUpperCase(),
+                        emoji: config.emoji,
+                        status,
+                    });
+                });
+                // parks
+                generated.push(
+                    {
+                        id: 'park1',
+                        type: 'park',
+                        position: { x: 600, y: 200 },
+                        size: { width: 80, height: 80 },
+                        agent: '',
+                        label: 'CENTRAL PARK',
+                        emoji: '🌳',
+                    },
+                    {
+                        id: 'park2',
+                        type: 'park',
+                        position: { x: 650, y: 480 },
+                        size: { width: 60, height: 60 },
+                        agent: '',
+                        label: 'EAST PARK',
+                        emoji: '🌲',
+                    }
+                );
+                setBuildings(generated);
+            } catch (e) {
+                setBuildings([]);
+            }
+        };
+        fetchPersonalities();
+    }, []);
 
-	// Simulate random email activity
-	useEffect(() => {
-		const interval = setInterval(() => {
-			const agentsWithStatus = [
-				'power@',
-				'mayor@',
-				'emergency@',
-				'police@',
-				'transit@',
-				'karen@',
-				'bob@',
-			];
-			const randomAgent =
-				agentsWithStatus[
-					Math.floor(Math.random() * agentsWithStatus.length)
-				];
-
-			if (Math.random() < 0.3) {
-				// 30% chance to change status
-				const statuses: ('active' | 'warning' | 'crisis')[] = [
-					'active',
-					'warning',
-					'crisis',
-				];
-				const newStatus =
-					statuses[Math.floor(Math.random() * statuses.length)];
-
-				setBuildingStatuses((prev) => ({
-					...prev,
-					[randomAgent]: newStatus,
-				}));
-			}
-		}, 3000);
-
-		return () => clearInterval(interval);
-	}, []);
+    const handleBuildingClick = async (agent: string, label?: string) => {
+        if (!agent) return;
+        setActiveBuilding(agent);
+        if (onOpenInbox) {
+            onOpenInbox(agent, label);
+        }
+        try {
+            // Fire the API call on click so the network request is immediate
+            await apiService.getAgentInbox(agent);
+        } catch {
+            // ignore errors here; panel will handle its own loading/empty state
+        }
+    };
 
 	return (
 		<div className="city-map">
@@ -309,7 +191,7 @@ export const CityMap: React.FC = () => {
 			<div className="road road-vertical road-secondary-v2" />
 
 			{/* Connection lines (email traffic) */}
-			<ConnectionLine
+            <ConnectionLine
 				id="connection1"
 				style={{
 					top: 240,
@@ -341,91 +223,14 @@ export const CityMap: React.FC = () => {
 			/>
 
 			{/* Buildings */}
-			{buildings.map((building) => (
-				<Building
-					key={building.id}
-					{...building}
-					isActive={activeBuilding === building.agent}
-					onClick={handleBuildingClick}
-				/>
-			))}
-
-			{/* Legend */}
-			<div className="legend">
-				<h4 style={{ margin: '0 0 10px 0', color: '#00ff88' }}>
-					LEGEND
-				</h4>
-				<div className="legend-item">
-					<div
-						className="legend-color"
-						style={{
-							background: '#ffaa00',
-							borderColor: '#ffcc00',
-						}}
-					/>
-					<span>Power/Infrastructure</span>
-				</div>
-				<div className="legend-item">
-					<div
-						className="legend-color"
-						style={{
-							background: '#4488ff',
-							borderColor: '#66aaff',
-						}}
-					/>
-					<span>Government</span>
-				</div>
-				<div className="legend-item">
-					<div
-						className="legend-color"
-						style={{
-							background: '#ff4444',
-							borderColor: '#ff6666',
-						}}
-					/>
-					<span>Emergency Services</span>
-				</div>
-				<div className="legend-item">
-					<div
-						className="legend-color"
-						style={{
-							background: '#00ccff',
-							borderColor: '#00ffff',
-						}}
-					/>
-					<span>Transit</span>
-				</div>
-				<div className="legend-item">
-					<div
-						className="legend-color"
-						style={{
-							background: '#88ff88',
-							borderColor: '#aaffaa',
-						}}
-					/>
-					<span>Residential</span>
-				</div>
-				<div className="legend-item">
-					<div
-						className="legend-color"
-						style={{
-							background: '#ff88ff',
-							borderColor: '#ffaaff',
-						}}
-					/>
-					<span>Commercial</span>
-				</div>
-				<div className="legend-item">
-					<div
-						className="legend-color"
-						style={{
-							background: '#22aa22',
-							borderColor: '#44cc44',
-						}}
-					/>
-					<span>Parks</span>
-				</div>
-			</div>
+            {buildings.map((building) => (
+                <Building
+                    key={building.id}
+                    {...building}
+                    isActive={activeBuilding === building.agent}
+                    onClick={() => handleBuildingClick(building.agent, building.label)}
+                />
+            ))}
 		</div>
 	);
 };

@@ -4,6 +4,8 @@ import { useGame } from '../contexts/GameContext';
 import type { PolicyProposal } from '../services/api';
 import './BaseLayout.css';
 import { LogsPanel } from '../components/LogsPanel';
+import { InboxPanel } from '../components/InboxPanel';
+import { apiService, type AgentInboxResponse } from '../services/api';
 
 const formatImpactValue = (value: number | undefined) => {
   if (value == null) return '0';
@@ -35,6 +37,10 @@ const formatCurrency = (value: number | undefined) => `$${(value ?? 0).toLocaleS
 export function BaseLayout() {
     const [activeProposalId, setActiveProposalId] = useState<string | null>(null);
     const [logsOpen, setLogsOpen] = useState<boolean>(false);
+    const [inboxOpen, setInboxOpen] = useState<boolean>(true);
+    const [inboxAgentName, setInboxAgentName] = useState<string | undefined>(undefined);
+    const [inboxHeader, setInboxHeader] = useState<string | undefined>(undefined);
+    const [inboxPrefetch, setInboxPrefetch] = useState<AgentInboxResponse | null>(null);
 	const {
 		gameState,
 		suggestions,
@@ -286,7 +292,17 @@ export function BaseLayout() {
               </div> */}
 						</div>
 						<div className="app-stage__canvas">
-							<CityMap />
+                            <CityMap onOpenInbox={async (agentName, label) => {
+                                setInboxAgentName(agentName);
+                                setInboxHeader(label);
+                                setInboxOpen(true);
+                                try {
+                                    const data = await apiService.getAgentInbox(agentName);
+                                    setInboxPrefetch(data);
+                                } catch {
+                                    setInboxPrefetch(null);
+                                }
+                            }} />
 						</div>
 					</main>
 				</div>
@@ -393,6 +409,7 @@ export function BaseLayout() {
 
             {/* Logs panel mounted at page level */}
             <LogsPanel isOpen={logsOpen} onClose={() => setLogsOpen(false)} />
+            <InboxPanel isOpen={inboxOpen} onClose={() => setInboxOpen(false)} agentName={inboxAgentName} headerLabel={inboxHeader} initialInbox={inboxPrefetch} />
 		</div>
 	);
 }

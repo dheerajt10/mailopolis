@@ -7,6 +7,7 @@ const apiClient = axios.create({
   timeout: 10000,
 });
 
+
 // Types for API responses
 export interface CityStats {
   budget: number;
@@ -83,6 +84,63 @@ export interface PersonalitiesResponse {
   personalities: Record<string, AgentPersonality>;
 }
 
+// AgentMail inbox types
+export interface AgentInboxInfo {
+  agent_name: string;
+  email_address: string;
+  department: string;
+  display_name: string;
+  created_at: string;
+  username: string;
+}
+
+export interface AgentInboxesResponse {
+  ok: boolean;
+  count: number;
+  inboxes: AgentInboxInfo[];
+  api_status: 'connected' | 'no_api_key';
+}
+
+export interface AgentMessage {
+  message_id: string;
+  subject: string;
+  from: string;
+  to: string[];
+  cc: string[];
+  bcc: string[];
+  text_content?: string;
+  html_content?: string;
+  received_at: string;
+  thread_id?: string;
+  labels?: string[];
+  attachments?: Array<{ filename: string; url?: string; contentType?: string }>;
+}
+
+export interface AgentInboxResponse {
+  ok: boolean;
+  agent_name: string;
+  email_address: string;
+  department: string;
+  display_name: string;
+  created_at: string;
+  username: string;
+  recent_messages: AgentMessage[];
+  message_count: number;
+}
+
+export interface AgentMessagesResponse {
+  ok: boolean;
+  agent_name: string;
+  email_address: string;
+  total_messages: number;
+  messages: AgentMessage[];
+  inbox_info: {
+    department: string;
+    display_name: string;
+    created_at: string;
+  };
+}
+
 // API service functions
 export const apiService = {
   // Start a new game
@@ -112,6 +170,26 @@ export const apiService = {
   // Get agent personalities
   async getPersonalities(): Promise<PersonalitiesResponse> {
     const response = await apiClient.get('/maylopolis/personalities');
+    return response.data;
+  },
+
+  // // Get all agent inboxes
+  // async getAgentInboxes(): Promise<AgentInboxesResponse> {
+  //   const response = await apiClient.get('/maylopolis/inboxes');
+  //   return response.data;
+  // },
+
+  // Get a specific agent inbox summary with recent messages
+  async getAgentInbox(agentName: string): Promise<AgentInboxResponse> {
+    const response = await apiClient.get(`/maylopolis/inboxes/${encodeURIComponent(agentName)}`);
+    return response.data;
+  },
+
+  // Get messages for an agent (optionally limit)
+  async getAgentMessages(agentName: string, limit = 20): Promise<AgentMessagesResponse> {
+    const response = await apiClient.get(`/maylopolis/inboxes/${encodeURIComponent(agentName)}/messages`, {
+      params: { limit, include_content: true },
+    });
     return response.data;
   },
 };
