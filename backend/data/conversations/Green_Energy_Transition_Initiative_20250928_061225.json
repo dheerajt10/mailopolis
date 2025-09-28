@@ -1,0 +1,230 @@
+{
+  "proposal_id": "Green_Energy_Transition_Initiative",
+  "timestamp": "2025-09-28T06:12:25.737278",
+  "messages": [
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "As Dr. Marcus Chen, I need to consider how this proposal impacts Energy.",
+      "timestamp": "2025-09-28T06:12:25.737033",
+      "message_type": "initial_reaction",
+      "references": []
+    },
+    {
+      "speaker": "Maria Santos",
+      "department": "Transportation",
+      "content": "As Maria Santos, I need to consider how this proposal impacts Transportation.",
+      "timestamp": "2025-09-28T06:12:25.737063",
+      "message_type": "initial_reaction",
+      "references": []
+    },
+    {
+      "speaker": "Dr. Sarah Rodriguez",
+      "department": "Housing",
+      "content": "As Dr. Sarah Rodriguez, I need to consider how this proposal impacts Housing.",
+      "timestamp": "2025-09-28T06:12:25.737089",
+      "message_type": "initial_reaction",
+      "references": []
+    },
+    {
+      "speaker": "Robert Kim",
+      "department": "Waste",
+      "content": "As Robert Kim, I need to consider how this proposal impacts Waste.",
+      "timestamp": "2025-09-28T06:12:25.737111",
+      "message_type": "initial_reaction",
+      "references": []
+    },
+    {
+      "speaker": "Elena Vasquez",
+      "department": "Water",
+      "content": "As Elena Vasquez, I need to consider how this proposal impacts Water.",
+      "timestamp": "2025-09-28T06:12:25.737131",
+      "message_type": "initial_reaction",
+      "references": []
+    },
+    {
+      "speaker": "James Morrison",
+      "department": "EconomicDevelopment",
+      "content": "As James Morrison, I need to consider how this proposal impacts EconomicDevelopment.",
+      "timestamp": "2025-09-28T06:12:25.737152",
+      "message_type": "initial_reaction",
+      "references": []
+    },
+    {
+      "speaker": "Citizens Council Representative",
+      "department": "Citizens",
+      "content": "As Citizens Council Representative, I need to consider how this proposal impacts Citizens.",
+      "timestamp": "2025-09-28T06:12:25.737171",
+      "message_type": "initial_reaction",
+      "references": []
+    },
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "Let me work with my colleagues to find a solution that works for everyone.",
+      "timestamp": "2025-09-28T06:12:25.737184",
+      "message_type": "negotiation",
+      "references": [
+        "Dr. Marcus Chen",
+        "Maria Santos",
+        "Dr. Sarah Rodriguez",
+        "Robert Kim",
+        "Elena Vasquez",
+        "James Morrison",
+        "Citizens Council Representative"
+      ]
+    },
+    {
+      "speaker": "Maria Santos",
+      "department": "Transportation",
+      "content": "Let me work with my colleagues to find a solution that works for everyone.",
+      "timestamp": "2025-09-28T06:12:25.737191",
+      "message_type": "negotiation",
+      "references": [
+        "Dr. Marcus Chen",
+        "Maria Santos",
+        "Dr. Sarah Rodriguez",
+        "Robert Kim",
+        "Elena Vasquez",
+        "James Morrison",
+        "Citizens Council Representative"
+      ]
+    },
+    {
+      "speaker": "Dr. Sarah Rodriguez",
+      "department": "Housing",
+      "content": "Let me work with my colleagues to find a solution that works for everyone.",
+      "timestamp": "2025-09-28T06:12:25.737196",
+      "message_type": "negotiation",
+      "references": [
+        "Dr. Marcus Chen",
+        "Maria Santos",
+        "Dr. Sarah Rodriguez",
+        "Robert Kim",
+        "Elena Vasquez",
+        "James Morrison",
+        "Citizens Council Representative"
+      ]
+    },
+    {
+      "speaker": "Robert Kim",
+      "department": "Waste",
+      "content": "Let me work with my colleagues to find a solution that works for everyone.",
+      "timestamp": "2025-09-28T06:12:25.737201",
+      "message_type": "negotiation",
+      "references": [
+        "Dr. Marcus Chen",
+        "Maria Santos",
+        "Dr. Sarah Rodriguez",
+        "Robert Kim",
+        "Elena Vasquez",
+        "James Morrison",
+        "Citizens Council Representative"
+      ]
+    },
+    {
+      "speaker": "Elena Vasquez",
+      "department": "Water",
+      "content": "Let me work with my colleagues to find a solution that works for everyone.",
+      "timestamp": "2025-09-28T06:12:25.737205",
+      "message_type": "negotiation",
+      "references": [
+        "Dr. Marcus Chen",
+        "Maria Santos",
+        "Dr. Sarah Rodriguez",
+        "Robert Kim",
+        "Elena Vasquez",
+        "James Morrison",
+        "Citizens Council Representative"
+      ]
+    },
+    {
+      "speaker": "James Morrison",
+      "department": "EconomicDevelopment",
+      "content": "Let me work with my colleagues to find a solution that works for everyone.",
+      "timestamp": "2025-09-28T06:12:25.737210",
+      "message_type": "negotiation",
+      "references": [
+        "Dr. Marcus Chen",
+        "Maria Santos",
+        "Dr. Sarah Rodriguez",
+        "Robert Kim",
+        "Elena Vasquez",
+        "James Morrison",
+        "Citizens Council Representative"
+      ]
+    },
+    {
+      "speaker": "Citizens Council Representative",
+      "department": "Citizens",
+      "content": "Let me work with my colleagues to find a solution that works for everyone.",
+      "timestamp": "2025-09-28T06:12:25.737214",
+      "message_type": "negotiation",
+      "references": [
+        "Dr. Marcus Chen",
+        "Maria Santos",
+        "Dr. Sarah Rodriguez",
+        "Robert Kim",
+        "Elena Vasquez",
+        "James Morrison",
+        "Citizens Council Representative"
+      ]
+    },
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "POSITION: NEUTRAL\nREASONING: After discussion, I maintain a neutral stance.\nCONDITIONS: None",
+      "timestamp": "2025-09-28T06:12:25.737226",
+      "message_type": "final_position",
+      "references": []
+    },
+    {
+      "speaker": "Maria Santos",
+      "department": "Transportation",
+      "content": "POSITION: NEUTRAL\nREASONING: After discussion, I maintain a neutral stance.\nCONDITIONS: None",
+      "timestamp": "2025-09-28T06:12:25.737233",
+      "message_type": "final_position",
+      "references": []
+    },
+    {
+      "speaker": "Dr. Sarah Rodriguez",
+      "department": "Housing",
+      "content": "POSITION: NEUTRAL\nREASONING: After discussion, I maintain a neutral stance.\nCONDITIONS: None",
+      "timestamp": "2025-09-28T06:12:25.737238",
+      "message_type": "final_position",
+      "references": []
+    },
+    {
+      "speaker": "Robert Kim",
+      "department": "Waste",
+      "content": "POSITION: NEUTRAL\nREASONING: After discussion, I maintain a neutral stance.\nCONDITIONS: None",
+      "timestamp": "2025-09-28T06:12:25.737244",
+      "message_type": "final_position",
+      "references": []
+    },
+    {
+      "speaker": "Elena Vasquez",
+      "department": "Water",
+      "content": "POSITION: NEUTRAL\nREASONING: After discussion, I maintain a neutral stance.\nCONDITIONS: None",
+      "timestamp": "2025-09-28T06:12:25.737249",
+      "message_type": "final_position",
+      "references": []
+    },
+    {
+      "speaker": "James Morrison",
+      "department": "EconomicDevelopment",
+      "content": "POSITION: NEUTRAL\nREASONING: After discussion, I maintain a neutral stance.\nCONDITIONS: None",
+      "timestamp": "2025-09-28T06:12:25.737254",
+      "message_type": "final_position",
+      "references": []
+    },
+    {
+      "speaker": "Citizens Council Representative",
+      "department": "Citizens",
+      "content": "POSITION: NEUTRAL\nREASONING: After discussion, I maintain a neutral stance.\nCONDITIONS: None",
+      "timestamp": "2025-09-28T06:12:25.737259",
+      "message_type": "final_position",
+      "references": []
+    }
+  ]
+}

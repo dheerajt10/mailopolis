@@ -14,13 +14,13 @@ app = FastAPI(
     version="2.0.0"
 )
 
-# Enable CORS for frontend
+# Enable CORS for frontend - Allow everything
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],  # React/Vite common ports
+    allow_origins=["*"],  # Allow all origins
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # Allow all methods
+    allow_headers=["*"],  # Allow all headers
 )
 
 
@@ -28,9 +28,14 @@ app.add_middleware(
 async def root():
     return {"message": "Welcome to Mailopolis! 🏙️"}
 
-# Add LangChain-powered game endpoints 
+# Add AgentMail endpoints
+from agentmail_api import add_agentmail_endpoints
+add_agentmail_endpoints(app)
+
+# Add LangChain-powered game endpoints (main game)
 from langchain_api import add_langchain_endpoints
 add_langchain_endpoints(app)
 
 if __name__ == "__main__":
+    # Run the FastAPI app directly 
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

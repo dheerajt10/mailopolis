@@ -87,7 +87,16 @@ class LangChainGameEngine:
             "round_number": self.game_state.round_number,
             "llm_provider": self.agent_manager.provider_name,
             "pending_proposals": len(self.game_state.pending_proposals),
-            "blockchain_transactions": len(self.game_state.blockchain_transactions)
+            "blockchain_transactions": len(self.game_state.blockchain_transactions),
+            "active_bad_actors": {k: {
+                "id": v.id,
+                "name": v.name,
+                "actor_type": v.type.value,
+                "target_departments": [dept.value for dept in v.target_departments],
+                "influence_level": getattr(v, 'influence_level', v.influence_power),
+                "corruption_budget": v.corruption_budget,
+                "activity_level": getattr(v, 'activity_level', 50)
+            } for k, v in self.game_state.active_bad_actors.items()}
         }
     
     async def submit_player_proposal(self, proposal: PolicyProposal) -> Dict:
@@ -109,7 +118,7 @@ class LangChainGameEngine:
         agent_reactions = await self.agent_manager.get_all_reactions(proposal, game_context)
         
         # Record submission on blockchain
-        self.game_state.add_blockchain_transaction(
+        transaction = self.game_state.add_blockchain_transaction(
             from_agent="player",
             to_agent="mayor",
             transaction_type="proposal_submission",
@@ -119,6 +128,19 @@ class LangChainGameEngine:
                 "target_department": proposal.target_department.value
             }
         )
+        
+        # Notify WebSocket clients
+        try:
+            from websocket_manager import notify_blockchain_transaction
+            import asyncio
+            asyncio.create_task(notify_blockchain_transaction({
+                "transaction_id": transaction.id,
+                "type": "proposal_submission",
+                "proposal_title": proposal.title,
+                "department": proposal.target_department.value
+            }))
+        except:
+            pass
         
         return {
             "proposal_id": proposal.id,
@@ -330,3 +352,52 @@ class LangChainGameEngine:
             },
             "game_context": game_context
         }
+    
+    async def simulate_bad_actor_round(self):
+        """Simulate bad actor activities for the current round"""
+        for bad_actor in self.game_state.active_bad_actors.values():
+            if random.random() < 0.4:  # 40% chance each bad actor acts
+                # Create a malicious proposal
+                target_dept = random.choice(bad_actor.target_departments)
+                
+                bad_proposal = PolicyProposal(
+                    title=f"{bad_actor.name} Initiative",
+                    description=f"Corporate proposal from {bad_actor.name} targeting {target_dept.value} department",
+                    target_department=target_dept,
+                    sustainability_impact=random.randint(-30, -5),  # Always negative
+                    economic_impact=random.randint(15, 35),  # Always positive (their selling point)
+                    political_impact=random.randint(10, 25),
+                    bribe_amount=random.randint(50000, 300000),
+                    proposed_by=bad_actor.id
+                )
+                
+                # Add to pending proposals
+                self.game_state.pending_proposals.append(bad_proposal)
+                
+                # Record bribe transaction on blockchain
+                if bad_proposal.bribe_amount > 0:
+                    self.game_state.add_blockchain_transaction(
+                        from_agent=bad_actor.id,
+                        to_agent="mayor",
+                        transaction_type="bribe",
+                        amount=bad_proposal.bribe_amount,
+                        data={
+                            "proposal_id": bad_proposal.id,
+                            "bad_actor": bad_actor.name,
+                            "target_department": target_dept.value
+                        }
+                    )
+                
+                # Notify of bad actor activity
+                try:
+                    from websocket_manager import notify_bad_actor_action
+                    import asyncio
+                    asyncio.create_task(notify_bad_actor_action({
+                        "bad_actor": bad_actor.name,
+                        "action": "submitted_proposal",
+                        "target_department": target_dept.value,
+                        "bribe_amount": bad_proposal.bribe_amount,
+                        "proposal_title": bad_proposal.title
+                    }))
+                except:
+                    pass

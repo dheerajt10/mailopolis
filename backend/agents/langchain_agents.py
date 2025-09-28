@@ -115,6 +115,10 @@ class LangChainAgentManager:
         self.agents: Dict[Department, 'LangChainAgent'] = {}
         for dept, personality in personalities.items():
             self.agents[dept] = LangChainAgent(personality, self.llm)
+        
+        # Add multi-agent chat system
+        from agents.multi_agent_chat import MultiAgentChatSystem
+        self.chat_system = MultiAgentChatSystem(self.agents)
     
     async def evaluate_proposal_by_department(self, proposal: PolicyProposal, 
                                             department: Department,
@@ -175,6 +179,173 @@ class LangChainAgentManager:
         if department in self.agents:
             return await self.agents[department].generate_counter_proposal(rejected_proposal, game_context)
         return None
+
+    async def discuss_and_evaluate_proposal(self, proposal: PolicyProposal,
+                                          game_context: Dict[str, Any]) -> Dict[str, Any]:
+        """New method: Full discussion then mayor decision"""
+        
+        print(f"🗣️  Starting multi-agent discussion for: {proposal.title}")
+        
+        # Run the multi-agent discussion
+        chat_rounds = await self.chat_system.discuss_proposal(proposal, game_context)
+        
+        # Extract final positions for mayor
+        final_round = chat_rounds[-1] if chat_rounds else None
+        department_positions = {}
+        
+        if final_round:
+            for message in final_round.messages:
+                # Parse final positions
+                if "POSITION:" in message.content:
+                    lines = message.content.split('\n')
+                    position = "NEUTRAL"  # Default
+                    reasoning = message.content
+                    conditions = "None"
+                    
+                    for line in lines:
+                        if line.startswith('POSITION:'):
+                            position = line.replace('POSITION:', '').strip()
+                        elif line.startswith('REASONING:'):
+                            reasoning = line.replace('REASONING:', '').strip()
+                        elif line.startswith('CONDITIONS:'):
+                            conditions = line.replace('CONDITIONS:', '').strip()
+                    
+                    department_positions[message.department] = {
+                        'position': position,
+                        'reasoning': reasoning,
+                        'conditions': conditions,
+                        'agent_name': message.speaker,
+                        'full_message': message.content
+                    }
+                else:
+                    # Fallback if format not followed
+                    department_positions[message.department] = {
+                        'position': 'NEUTRAL',
+                        'reasoning': message.content,
+                        'conditions': 'None',
+                        'agent_name': message.speaker,
+                        'full_message': message.content
+                    }
+        
+        # Mayor makes final decision based on discussion
+        print("👑 Mayor making final decision based on department discussion...")
+        mayor_evaluation = await self._mayor_decide_after_discussion(
+            proposal, game_context, chat_rounds, department_positions
+        )
+        
+        return {
+            'chat_rounds': chat_rounds,
+            'department_positions': department_positions,
+            'mayor_decision': mayor_evaluation,
+            'discussion_summary': self._create_discussion_summary(chat_rounds)
+        }
+
+    async def _mayor_decide_after_discussion(self, proposal: PolicyProposal,
+                                           game_context: Dict[str, Any],
+                                           chat_rounds: List,
+                                           department_positions: Dict) -> ProposalEvaluation:
+        """Mayor decides after hearing full department discussion"""
+        
+        discussion_summary = "\n\n".join([
+            f"ROUND {i+1}: {len(round_data.messages)} messages"
+            for i, round_data in enumerate(chat_rounds)
+        ])
+        
+        positions_summary = "\n".join([
+            f"- {dept}: {info['position']} ({info['agent_name']})"
+            for dept, info in department_positions.items()
+        ])
+        
+        detailed_reasoning = "\n".join([
+            f"- {info['agent_name']}: {info['reasoning']}"
+            for info in department_positions.values()
+        ])
+        
+        user_input = f"""MAYOR'S FINAL DECISION
+
+PROPOSAL: {proposal.title}
+DESCRIPTION: {proposal.description}
+
+DEPARTMENT HEAD DISCUSSION SUMMARY:
+{discussion_summary}
+
+FINAL DEPARTMENT POSITIONS:
+{positions_summary}
+
+DEPARTMENT REASONING:
+{detailed_reasoning}
+
+As Mayor, you've heard the full discussion between your department heads. Make your final decision considering:
+1. The technical expertise of each department
+2. The political implications  
+3. The city's overall priorities
+4. Areas of consensus vs. disagreement
+
+Provide your decision in the standard format:
+Decision: [SUPPORT/OPPOSE/NEUTRAL]
+Reasoning: [Your mayoral perspective in 2-3 sentences]
+Confidence: [1-10]
+Political_Impact: [How this decision affects your political standing]"""
+
+        mayor_agent = self.agents[Department.MAYOR]
+        
+        if mayor_agent.llm:
+            try:
+                messages = mayor_agent.prompt_template.format_messages(user_input=user_input)
+                response = await mayor_agent.llm.ainvoke(messages)
+                return mayor_agent._parse_evaluation_response(response.content, proposal)
+            except Exception as e:
+                print(f"❌ Mayor decision error: {e}")
+                return self._fallback_mayor_decision(proposal, department_positions)
+        else:
+            return self._fallback_mayor_decision(proposal, department_positions)
+
+    def _fallback_mayor_decision(self, proposal: PolicyProposal, 
+                               department_positions: Dict) -> ProposalEvaluation:
+        """Fallback mayor decision when LLM fails"""
+        support_count = sum(1 for info in department_positions.values() 
+                          if 'SUPPORT' in info['position'].upper())
+        
+        total_departments = len(department_positions)
+        if total_departments == 0:
+            accept = False
+            confidence = 50
+        else:
+            accept = support_count > total_departments / 2
+            confidence = min(80, max(40, int((support_count / total_departments) * 100)))
+        
+        return ProposalEvaluation(
+            accept=accept,
+            reasoning=f"Based on department input, {support_count}/{total_departments} departments support this proposal.",
+            confidence=confidence,
+            concerns=[],
+            alternative_suggestions=[]
+        )
+
+    def _create_discussion_summary(self, chat_rounds: List) -> str:
+        """Create human-readable summary of the discussion"""
+        if not chat_rounds:
+            return "No discussion occurred due to system errors."
+            
+        total_messages = sum(len(round_data.messages) for round_data in chat_rounds)
+        
+        summary_parts = [
+            f"Multi-agent discussion completed in {len(chat_rounds)} rounds with {total_messages} total exchanges.",
+            "",
+            "Key Discussion Points:"
+        ]
+        
+        # Extract key themes from final round
+        if chat_rounds:
+            final_messages = chat_rounds[-1].messages
+            for msg in final_messages:
+                if "POSITION:" in msg.content:
+                    position_line = [line for line in msg.content.split('\n') if line.startswith('POSITION:')]
+                    if position_line:
+                        position = position_line[0].replace('POSITION:', '').strip()
+                        summary_parts.append(f"- {msg.speaker}: {position}")
+        
+        return "\n".join(summary_parts)
 
 class LangChainAgent:
     """Individual agent powered by LangChain"""
