@@ -29,6 +29,16 @@ async def root():
     return {"message": "Welcome to Mailopolis! 🏙️"}
 
 
+# Include the Maylopolis router (if available) under /maylopolis
+try:
+    from maylopolis_api import router as maylopolis_router
+    app.include_router(maylopolis_router)
+except Exception:
+    # If the module isn't importable (e.g., missing deps during static analysis),
+    # we silently skip including the router so the main app still runs.
+    pass
+
+
 if __name__ == "__main__":
     # Run the FastAPI app directly 
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
