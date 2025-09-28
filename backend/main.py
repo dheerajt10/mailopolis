@@ -7,6 +7,8 @@ from models.game_models import (
     GameState, EmailThread, PlayerAction, ActionOutcome, 
     SustainabilityGameState, PolicyProposal, Department
 )
+from agents.agent_personalities import AgentPersonalities, AgentPersonality
+
 
 app = FastAPI(
     title="Mailopolis - Adversarial Sustainability Game",
