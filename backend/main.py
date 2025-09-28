@@ -8,6 +8,7 @@ from models.game_models import (
     SustainabilityGameState, PolicyProposal, Department
 )
 from game.game_engine import SustainabilityGameEngine
+from llm_api import add_llm_endpoints
 
 app = FastAPI(
     title="Mailopolis - Adversarial Sustainability Game",
@@ -179,6 +180,9 @@ async def get_player_stats():
         "bad_actor_influence": game_engine.game_state.bad_actor_influence,
         "round_number": game_engine.game_state.round_number
     }
+
+# Add LLM-powered game endpoints
+add_llm_endpoints(app)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)

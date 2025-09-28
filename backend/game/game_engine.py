@@ -253,6 +253,142 @@ class SustainabilityGameEngine:
             "loss_conditions_check": self._check_loss_conditions()
         }
     
+    def mayor_decide_on_proposals(self) -> List[Dict]:
+        """Mayor evaluates all pending proposals and makes decisions"""
+        decisions = []
+        
+        for proposal in self.game_state.pending_proposals:
+            decision = self._mayor_evaluate_proposal(proposal)
+            decisions.append(decision)
+            
+            if decision["accepted"]:
+                self._implement_policy(proposal)
+            
+            # Record decision on blockchain
+            self.game_state.add_blockchain_transaction(
+                from_agent="mayor",
+                to_agent=proposal.proposed_by,
+                transaction_type="policy_decision",
+                data={
+                    "proposal_id": proposal.id,
+                    "accepted": decision["accepted"],
+                    "reasoning": decision["reasoning"]
+                }
+            )
+        
+        # Clear pending proposals
+        self.game_state.pending_proposals = []
+        
+        # Update round number
+        self.game_state.round_number += 1
+        
+        return decisions
+    
+    def _mayor_evaluate_proposal(self, proposal: PolicyProposal) -> Dict:
+        """Mayor evaluates a single proposal based on multiple factors"""
+        
+        # Base scoring factors
+        economic_weight = 0.4
+        political_weight = 0.3
+        bribe_weight = 0.2
+        trust_weight = 0.1
+        
+        # Calculate proposal appeal score
+        economic_score = proposal.economic_impact * economic_weight
+        political_score = proposal.political_impact * political_weight
+        
+        # Bribe influence (bad actors get bonus, player gets trust bonus instead)
+        if proposal.bribe_amount > 0:
+            bribe_score = min(proposal.bribe_amount / 10000, 30) * bribe_weight  # Cap bribe influence
+        else:
+            # Player gets trust bonus instead of bribes
+            bribe_score = (self.game_state.mayor_trust_in_player / 100) * 20 * bribe_weight
+        
+        total_score = economic_score + political_score + bribe_score
+        
+        # Adjust based on sustainability (mayor has some environmental awareness)
+        sustainability_factor = 0.1 + (self.game_state.sustainability_index / 1000)  # Small but present
+        total_score += proposal.sustainability_impact * sustainability_factor
+        
+        # Random factor for unpredictability
+        random_factor = random.uniform(-5, 5)
+        total_score += random_factor
+        
+        # Decision threshold (higher trust = lower threshold for player)
+        if proposal.proposed_by == "player":
+            threshold = 8 - (self.game_state.mayor_trust_in_player / 20)  # Trust reduces threshold
+        else:
+            threshold = 12 + (self.game_state.bad_actor_influence / 10)  # Bad actor influence helps them
+        
+        accepted = total_score >= threshold
+        
+        # Update trust based on this decision
+        if proposal.proposed_by == "player":
+            if accepted:
+                self.game_state.mayor_trust_in_player = min(100, self.game_state.mayor_trust_in_player + 3)
+                self.player_consecutive_rejections = 0
+            else:
+                self.game_state.mayor_trust_in_player = max(0, self.game_state.mayor_trust_in_player - 5)
+                self.player_consecutive_rejections += 1
+        
+        return {
+            "proposal_id": proposal.id,
+            "title": proposal.title,
+            "proposed_by": proposal.proposed_by,
+            "accepted": accepted,
+            "total_score": round(total_score, 2),
+            "threshold": threshold,
+            "reasoning": self._generate_mayor_reasoning(proposal, accepted, total_score),
+            "sustainability_impact": proposal.sustainability_impact if accepted else 0
+        }
+    
+    def _generate_mayor_reasoning(self, proposal: PolicyProposal, accepted: bool, score: float) -> str:
+        """Generate mayor's reasoning for the decision"""
+        if accepted:
+            if proposal.proposed_by == "player":
+                return f"Your sustainability proposal shows merit. The economic projections look promising."
+            else:
+                return f"This initiative will bring immediate economic benefits to our city."
+        else:
+            if proposal.proposed_by == "player":
+                return f"While I appreciate your environmental focus, I need to consider other priorities right now."
+            else:
+                return f"The proposal needs more development before I can support it."
+    
+    def _implement_policy(self, proposal: PolicyProposal):
+        """Implement an accepted policy and update department scores"""
+        target_dept = proposal.target_department
+        
+        if target_dept in self.game_state.department_scores:
+            # Apply sustainability impact to target department
+            current_score = self.game_state.department_scores[target_dept]
+            new_score = max(0, min(100, current_score + proposal.sustainability_impact))
+            self.game_state.department_scores[target_dept] = new_score
+            
+            # Record on blockchain
+            self.game_state.add_blockchain_transaction(
+                from_agent="system",
+                to_agent=target_dept.value,
+                transaction_type="department_score_update",
+                data={
+                    "old_score": current_score,
+                    "new_score": new_score,
+                    "change": proposal.sustainability_impact,
+                    "policy": proposal.title
+                }
+            )
+        
+        # Update overall sustainability index
+        self.game_state.sustainability_index = self.game_state.calculate_sustainability_index()
+        
+        # Handle bribe payments for bad actors
+        if proposal.bribe_amount > 0:
+            for actor in self.game_state.active_bad_actors.values():
+                if actor.id == proposal.proposed_by:
+                    actor.corruption_budget -= proposal.bribe_amount
+                    self.game_state.bad_actor_influence = min(100, self.game_state.bad_actor_influence + 2)
+                    break
+    
     def process_player_action(self, action: PlayerAction) -> ActionOutcome:
         """
         Process a player action and return the outcome.

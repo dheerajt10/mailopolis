@@ -20,23 +20,23 @@ class AgentFactory:
         mayor = AgentFactory.create_mayor()
         agents[mayor.id] = mayor
         
-        # PowerGrid Department - Technical, sustainability-focused
-        power_chief = AgentFactory.create_power_grid_chief()
-        agents[power_chief.id] = power_chief
+        # Energy Department - Sustainability-focused, technical
+        energy_chief = AgentFactory.create_energy_chief()
+        agents[energy_chief.id] = energy_chief
         
-        # Hospital Department - Health-focused, collaborative
-        hospital_chief = AgentFactory.create_hospital_chief()
-        agents[hospital_chief.id] = hospital_chief
+        # Transportation Department - Sustainability and equity focused
+        transport_chief = AgentFactory.create_transport_chief()
+        agents[transport_chief.id] = transport_chief
         
-        # Transit Department - Efficiency-focused, bureaucratic
-        transit_chief = AgentFactory.create_transit_chief()
-        agents[transit_chief.id] = transit_chief
+        # Housing Department - Social equity and sustainability focused  
+        housing_chief = AgentFactory.create_housing_chief()
+        agents[housing_chief.id] = housing_chief
         
-        # Finance Department - Budget-focused, cautious
-        finance_chief = AgentFactory.create_finance_chief()
-        agents[finance_chief.id] = finance_chief
+        # Economic Development Department - Growth and sustainability focused
+        econ_dev_chief = AgentFactory.create_economic_dev_chief()
+        agents[econ_dev_chief.id] = econ_dev_chief
         
-        # Citizens - Emotional, approval-sensitive
+        # Citizens Representative - Advocates for sustainability and equity
         citizen_rep = AgentFactory.create_citizen_representative()
         agents[citizen_rep.id] = citizen_rep
         
@@ -44,7 +44,7 @@ class AgentFactory:
     
     @staticmethod
     def create_mayor() -> Agent:
-        """Mayor prioritizes approval ratings and political optics"""
+        """Mayor prioritizes political approval and economic growth"""
         return Agent(
             name="Mayor Patricia Williams",
             email="mayor@mailopolis.gov",
@@ -52,9 +52,9 @@ class AgentFactory:
             personality=AgentPersonality(
                 decision_style=DecisionStyle.BUREAUCRATIC,
                 priorities=[
-                    Priority(type=PriorityType.APPROVAL, weight=0.4),
-                    Priority(type=PriorityType.BUDGET, weight=0.3),
-                    Priority(type=PriorityType.HEALTH, weight=0.3)
+                    Priority(type=PriorityType.POLITICAL_APPROVAL, weight=0.4),
+                    Priority(type=PriorityType.ECONOMIC_GROWTH, weight=0.3),
+                    Priority(type=PriorityType.SUSTAINABILITY, weight=0.3)
                 ],
                 communication_style=CommunicationStyle.POLITICAL,
                 risk_tolerance=30,  # Risk-averse
@@ -68,93 +68,93 @@ class AgentFactory:
         )
     
     @staticmethod
-    def create_power_grid_chief() -> Agent:
-        """PowerGrid Chief is technical, sustainability-focused"""
+    def create_energy_chief() -> Agent:
+        """Energy Chief - Technical expert focused on sustainability and clean energy"""
         return Agent(
             name="Dr. Marcus Chen",
-            email="power@mailopolis.gov", 
-            department=Department.POWER_GRID,
+            email="m.chen@mailopolis-energy.gov",
+            department=Department.ENERGY,
             personality=AgentPersonality(
                 decision_style=DecisionStyle.COLLABORATIVE,
                 priorities=[
                     Priority(type=PriorityType.SUSTAINABILITY, weight=0.4),
-                    Priority(type=PriorityType.EFFICIENCY, weight=0.3),
-                    Priority(type=PriorityType.BUDGET, weight=0.3)
+                    Priority(type=PriorityType.ECONOMIC_GROWTH, weight=0.3),
+                    Priority(type=PriorityType.CORRUPTION_RESISTANCE, weight=0.3)
                 ],
                 communication_style=CommunicationStyle.TECHNICAL,
-                risk_tolerance=65,  # Moderate risk tolerance for innovation
-                budget_sensitivity=60,
-                public_opinion_sensitivity=40,  # Less concerned with optics
-                sustainability_focus=90  # Very high sustainability focus
+                risk_tolerance=60,
+                budget_sensitivity=50,
+                public_opinion_sensitivity=40,
+                sustainability_focus=90
             ),
-            trust_level=75,  # Starts trusting
-            response_time_base=25,  # Quick technical responses
-            current_workload=60
+            trust_level=70,
+            response_time_base=30,
+            current_workload=65
         )
-    
+
     @staticmethod
-    def create_hospital_chief() -> Agent:
-        """Hospital Chief prioritizes health outcomes above all"""
+    def create_transport_chief() -> Agent:
+        """Transportation Chief focuses on sustainable mobility and equity"""
         return Agent(
-            name="Dr. Sarah Rodriguez",
-            email="hospital@mailopolis.gov",
-            department=Department.HOSPITAL,
+            name="Maria Santos",
+            email="transport@mailopolis.gov",
+            department=Department.TRANSPORTATION,
             personality=AgentPersonality(
-                decision_style=DecisionStyle.AGGRESSIVE,  # Aggressive about health
+                decision_style=DecisionStyle.COLLABORATIVE,
                 priorities=[
-                    Priority(type=PriorityType.HEALTH, weight=0.6),
-                    Priority(type=PriorityType.BUDGET, weight=0.2),
-                    Priority(type=PriorityType.APPROVAL, weight=0.2)
-                ],
-                communication_style=CommunicationStyle.TECHNICAL,
-                risk_tolerance=85,  # Will take risks for health outcomes
-                budget_sensitivity=40,  # Less budget sensitive when health at stake
-                public_opinion_sensitivity=60,
-                sustainability_focus=35  # Lower sustainability focus
-            ),
-            trust_level=80,  # High trust, medical professional
-            response_time_base=20,  # Very quick, emergency-oriented
-            current_workload=75  # Always busy
-        )
-    
-    @staticmethod  
-    def create_transit_chief() -> Agent:
-        """Transit Chief is bureaucratic, process-oriented"""
-        return Agent(
-            name="James Morrison",
-            email="transit@mailopolis.gov",
-            department=Department.TRANSIT,
-            personality=AgentPersonality(
-                decision_style=DecisionStyle.BUREAUCRATIC,
-                priorities=[
-                    Priority(type=PriorityType.EFFICIENCY, weight=0.4),
-                    Priority(type=PriorityType.BUDGET, weight=0.35),
-                    Priority(type=PriorityType.APPROVAL, weight=0.25)
+                    Priority(type=PriorityType.SUSTAINABILITY, weight=0.4),
+                    Priority(type=PriorityType.ECONOMIC_GROWTH, weight=0.35),
+                    Priority(type=PriorityType.SOCIAL_EQUITY, weight=0.25)
                 ],
                 communication_style=CommunicationStyle.FORMAL,
-                risk_tolerance=25,  # Very risk-averse
-                budget_sensitivity=85,  # Highly budget sensitive
-                public_opinion_sensitivity=70,
-                sustainability_focus=55  # Moderate sustainability focus
+                risk_tolerance=45,
+                budget_sensitivity=70,
+                public_opinion_sensitivity=75,
+                sustainability_focus=85
             ),
             trust_level=65,
-            response_time_base=50,  # Slower, needs to check procedures
-            current_workload=55
+            response_time_base=40,
+            current_workload=70
+        )
+
+    @staticmethod
+    def create_housing_chief() -> Agent:
+        """Housing Chief prioritizes social equity and sustainable development"""
+        return Agent(
+            name="Dr. Sarah Rodriguez",
+            email="housing@mailopolis.gov",
+            department=Department.HOUSING,
+            personality=AgentPersonality(
+                decision_style=DecisionStyle.AGGRESSIVE,
+                priorities=[
+                    Priority(type=PriorityType.SOCIAL_EQUITY, weight=0.6),
+                    Priority(type=PriorityType.ECONOMIC_GROWTH, weight=0.2),
+                    Priority(type=PriorityType.POLITICAL_APPROVAL, weight=0.2)
+                ],
+                communication_style=CommunicationStyle.TECHNICAL,
+                risk_tolerance=85,
+                budget_sensitivity=40,
+                public_opinion_sensitivity=60,
+                sustainability_focus=75
+            ),
+            trust_level=80,
+            response_time_base=20,
+            current_workload=75
         )
     
     @staticmethod
-    def create_finance_chief() -> Agent:
-        """Finance Chief is cautious, budget-obsessed"""
+    def create_economic_dev_chief() -> Agent:
+        """Economic Development Chief balances growth and sustainability"""
         return Agent(
             name="Robert Kim",
-            email="finance@mailopolis.gov",
-            department=Department.FINANCE,
+            email="econdev@mailopolis.gov",
+            department=Department.ECONOMIC_DEV,
             personality=AgentPersonality(
                 decision_style=DecisionStyle.CAUTIOUS,
                 priorities=[
-                    Priority(type=PriorityType.BUDGET, weight=0.5),
-                    Priority(type=PriorityType.EFFICIENCY, weight=0.3),
-                    Priority(type=PriorityType.APPROVAL, weight=0.2)
+                    Priority(type=PriorityType.ECONOMIC_GROWTH, weight=0.5),
+                    Priority(type=PriorityType.SUSTAINABILITY, weight=0.3),
+                    Priority(type=PriorityType.CORRUPTION_RESISTANCE, weight=0.2)
                 ],
                 communication_style=CommunicationStyle.FORMAL,
                 risk_tolerance=15,  # Extremely risk-averse
@@ -177,9 +177,9 @@ class AgentFactory:
             personality=AgentPersonality(
                 decision_style=DecisionStyle.AGGRESSIVE,  # Emotional reactions
                 priorities=[
-                    Priority(type=PriorityType.HEALTH, weight=0.4),
-                    Priority(type=PriorityType.APPROVAL, weight=0.3),
-                    Priority(type=PriorityType.SUSTAINABILITY, weight=0.3)
+                    Priority(type=PriorityType.SOCIAL_EQUITY, weight=0.4),
+                    Priority(type=PriorityType.SUSTAINABILITY, weight=0.3),
+                    Priority(type=PriorityType.CORRUPTION_RESISTANCE, weight=0.3)
                 ],
                 communication_style=CommunicationStyle.CASUAL,
                 risk_tolerance=70,  # Willing to take risks for change
