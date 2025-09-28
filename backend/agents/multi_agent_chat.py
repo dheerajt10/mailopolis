@@ -6,6 +6,7 @@ from datetime import datetime
 
 from agents.conversation_memory import ConversationMemory, ConversationMessage
 from models.game_models import PolicyProposal, Department
+from service.async_logger import AsyncLogger
 
 if TYPE_CHECKING:
     from agents.langchain_agents import LangChainAgent
@@ -34,51 +35,33 @@ class PoliticalDiscussion:
 class MultiAgentChatSystem:
     """Orchestrates independent agent conversations and political maneuvering"""
     
-    def __init__(self, agents: Dict[Department, 'LangChainAgent'], emit_log=None):
+    def __init__(self, agents: Dict[Department, 'LangChainAgent'], logger: AsyncLogger = None):
         self.agents = agents
         self.memory = ConversationMemory()
         self.max_conversations = 8  # Maximum private conversations to simulate
-        self.emit_log = emit_log  # Optional async log callback
+        self.logger = logger or AsyncLogger()
 
-    async def _log(self, msg: str):
-        print(msg)
-        if self.emit_log:
-            try:
-                await self.emit_log(msg)
-            except Exception:
-                pass
-        def __init__(self, agents: Dict[Department, 'LangChainAgent'], emit_log=None):
-            self.agents = agents
-            self.memory = ConversationMemory()
-            self.max_conversations = 8  # Maximum private conversations to simulate
-            self.emit_log = emit_log  # Optional async log callback
-
-        async def _log(self, msg: str):
-            print(msg)
-            if self.emit_log:
-                try:
-                    await self.emit_log(msg)
-                except Exception:
-                    pass
+    def _log(self, msg: str):
+        self.logger.log(msg)
         
     async def discuss_proposal(self, proposal: PolicyProposal, 
                              game_context: Dict[str, Any]) -> PoliticalDiscussion:
         """Simulate independent political discussions and lobbying"""
-        await self._log(f"🏛️  Starting political maneuvering for: {proposal.title}")
+        self._log(f"🏛️  Starting political maneuvering for: {proposal.title}")
         # Exclude mayor from initial discussions - they're the decision maker
         discussing_agents = {dept: agent for dept, agent in self.agents.items() 
                            if dept != Department.MAYOR}
         try:
             # Phase 1: Independent private conversations
-            await self._log("🤝 Phase 1: Private conversations and coalition building...")
+            self._log("🤝 Phase 1: Private conversations and coalition building...")
             private_conversations = await self._simulate_private_conversations(
                 proposal, game_context, discussing_agents
             )
             # Phase 2: Determine coalitions based on conversations
-            await self._log("🤝 Phase 2: Coalition formation...")
+            self._log("🤝 Phase 2: Coalition formation...")
             coalitions = self._analyze_coalitions(private_conversations)
             # Phase 3: Agents decide whether to lobby the mayor
-            await self._log("👑 Phase 3: Mayor lobbying attempts...")
+            self._log("👑 Phase 3: Mayor lobbying attempts...")
             mayor_lobbying = await self._simulate_mayor_lobbying(
                 proposal, game_context, discussing_agents, private_conversations
             )
@@ -100,7 +83,7 @@ class MultiAgentChatSystem:
                 final_positions=final_positions
             )
         except Exception as e:
-            await self._log(f"❌ Error during political discussion: {e}")
+            self._log(f"❌ Error during political discussion: {e}")
             return PoliticalDiscussion(
                 proposal_id=proposal.title,
                 private_conversations=[],
@@ -119,7 +102,7 @@ class MultiAgentChatSystem:
         conversation_pairs = self._generate_conversation_pairs(agent_list, proposal)
         for i, (agent1, agent2, purpose) in enumerate(conversation_pairs):
             try:
-                await self._log(f"  💬 {agent1.personality.name} speaking privately with {agent2.personality.name} about {purpose}...")
+                self._log(f"  💬 {agent1.personality.name} speaking privately with {agent2.personality.name} about {purpose}...")
                 # Agent 1 initiates conversation
                 message1 = await self._generate_private_message(agent1, agent2, proposal, game_context, purpose, is_initiator=True)
                 # Agent 2 responds
@@ -148,7 +131,7 @@ class MultiAgentChatSystem:
                 )
                 conversations.append(conversation)
             except Exception as e:
-                await self._log(f"❌ Error in private conversation: {e}")
+                self._log(f"❌ Error in private conversation: {e}")
         return conversations
     
     def _generate_conversation_pairs(self, agents: List['LangChainAgent'], 
@@ -198,7 +181,7 @@ class MultiAgentChatSystem:
             
             if should_lobby:
                 try:
-                    print(f"  👑 {agent.personality.name} lobbying the mayor...")
+                    self._log(f"  👑 {agent.personality.name} lobbying the mayor...")
                     
                     # Generate lobbying message
                     lobby_message, influence_type = await self._generate_lobby_message(
@@ -220,7 +203,7 @@ class MultiAgentChatSystem:
                     ))
                     
                 except Exception as e:
-                    print(f"❌ Error in mayor lobbying from {agent.personality.name}: {e}")
+                    self._log(f"❌ Error in mayor lobbying from {agent.personality.name}: {e}")
         
         return lobbying_attempts
     
@@ -283,7 +266,7 @@ Keep it conversational. 2-3 sentences max."""
                 response = await agent.llm.ainvoke(messages)
                 return response.content.strip()
             except Exception as e:
-                print(f"❌ Error generating private message: {e}")
+                self._log(f"❌ Error generating private message: {e}")
                 return f"I'd like to discuss this proposal with you from my department's perspective."
         else:
             return f"Let me share {agent.personality.department.value}'s view on this proposal with you."
@@ -364,7 +347,7 @@ MESSAGE: [Your persuasive argument in 3-4 sentences as {agent.personality.name}]
                 return message, strategy
                 
             except Exception as e:
-                print(f"❌ Error generating lobby message: {e}")
+                self._log(f"❌ Error generating lobby message: {e}")
                 return f"I wanted to share my department's perspective on this proposal with you.", "support"
         else:
             return f"As {agent.personality.name}, I believe this proposal needs careful consideration.", "support"

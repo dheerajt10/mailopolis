@@ -1,0 +1,126 @@
+{
+  "proposal_id": "Emergency_Renewable_Energy_Initiative",
+  "timestamp": "2025-09-28T09:22:16.956287",
+  "messages": [
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "Let me share Energy's view on this proposal with you.",
+      "timestamp": "2025-09-28T09:22:16.955575",
+      "message_type": "private_information_sharing",
+      "references": [
+        "Maria Santos"
+      ]
+    },
+    {
+      "speaker": "Maria Santos",
+      "department": "Transportation",
+      "content": "Let me share Transportation's view on this proposal with you.",
+      "timestamp": "2025-09-28T09:22:16.955608",
+      "message_type": "private_information_sharing_response",
+      "references": [
+        "Dr. Marcus Chen"
+      ]
+    },
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "Let me share Energy's view on this proposal with you.",
+      "timestamp": "2025-09-28T09:22:16.955713",
+      "message_type": "private_general_discussion",
+      "references": [
+        "Robert Kim"
+      ]
+    },
+    {
+      "speaker": "Robert Kim",
+      "department": "Waste",
+      "content": "Let me share Waste's view on this proposal with you.",
+      "timestamp": "2025-09-28T09:22:16.955718",
+      "message_type": "private_general_discussion_response",
+      "references": [
+        "Dr. Marcus Chen"
+      ]
+    },
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "Let me share Energy's view on this proposal with you.",
+      "timestamp": "2025-09-28T09:22:16.955779",
+      "message_type": "private_information_sharing",
+      "references": [
+        "James Morrison"
+      ]
+    },
+    {
+      "speaker": "James Morrison",
+      "department": "EconomicDevelopment",
+      "content": "Let me share EconomicDevelopment's view on this proposal with you.",
+      "timestamp": "2025-09-28T09:22:16.955781",
+      "message_type": "private_information_sharing_response",
+      "references": [
+        "Dr. Marcus Chen"
+      ]
+    },
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "Let me share Energy's view on this proposal with you.",
+      "timestamp": "2025-09-28T09:22:16.955825",
+      "message_type": "private_general_discussion",
+      "references": [
+        "Citizens Council Representative"
+      ]
+    },
+    {
+      "speaker": "Citizens Council Representative",
+      "department": "Citizens",
+      "content": "Let me share Citizens's view on this proposal with you.",
+      "timestamp": "2025-09-28T09:22:16.955826",
+      "message_type": "private_general_discussion_response",
+      "references": [
+        "Dr. Marcus Chen"
+      ]
+    },
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "As Dr. Marcus Chen, I believe this proposal needs careful consideration.",
+      "timestamp": "2025-09-28T09:22:16.956040",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    },
+    {
+      "speaker": "Dr. Sarah Rodriguez",
+      "department": "Housing",
+      "content": "As Dr. Sarah Rodriguez, I believe this proposal needs careful consideration.",
+      "timestamp": "2025-09-28T09:22:16.956104",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    },
+    {
+      "speaker": "Elena Vasquez",
+      "department": "Water",
+      "content": "As Elena Vasquez, I believe this proposal needs careful consideration.",
+      "timestamp": "2025-09-28T09:22:16.956134",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    },
+    {
+      "speaker": "Citizens Council Representative",
+      "department": "Citizens",
+      "content": "As Citizens Council Representative, I believe this proposal needs careful consideration.",
+      "timestamp": "2025-09-28T09:22:16.956220",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    }
+  ]
+}
