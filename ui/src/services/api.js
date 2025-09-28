@@ -26,5 +26,10 @@ export const apiService = {
         const response = await apiClient.post('/maylopolis/turn', request);
         return response.data;
     },
+    // Get agent personalities
+    async getPersonalities() {
+        const response = await apiClient.get('/maylopolis/personalities');
+        return response.data;
+    },
 };
 export default apiService;

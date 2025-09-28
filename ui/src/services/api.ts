@@ -62,6 +62,27 @@ export interface TurnResponse {
   result: any;
 }
 
+export interface AgentPersonality {
+  name: string;
+  role: string;
+  department: string;
+  core_values: string[];
+  communication_style: string;
+  decision_factors: string[];
+  traits: {
+    corruption_resistance: number;
+    sustainability_focus: number;
+    political_awareness: number;
+    risk_tolerance: number;
+  };
+}
+
+export interface PersonalitiesResponse {
+  ok: boolean;
+  count: number;
+  personalities: Record<string, AgentPersonality>;
+}
+
 // API service functions
 export const apiService = {
   // Start a new game
@@ -85,6 +106,12 @@ export const apiService = {
   // Play a turn by submitting a proposal
   async playTurn(request: TurnRequest): Promise<TurnResponse> {
     const response = await apiClient.post('/maylopolis/turn', request);
+    return response.data;
+  },
+
+  // Get agent personalities
+  async getPersonalities(): Promise<PersonalitiesResponse> {
+    const response = await apiClient.get('/maylopolis/personalities');
     return response.data;
   },
 };

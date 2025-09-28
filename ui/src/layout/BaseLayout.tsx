@@ -3,6 +3,7 @@ import { CityMap } from '../city/CityMap';
 import { useGame } from '../contexts/GameContext';
 import type { PolicyProposal } from '../services/api';
 import './BaseLayout.css';
+import { LogsPanel } from '../components/LogsPanel';
 
 const formatImpactValue = (value: number | undefined) => {
   if (value == null) return '0';
@@ -32,7 +33,8 @@ const formatProposalTimestamp = (timestamp: string) => {
 const formatCurrency = (value: number | undefined) => `$${(value ?? 0).toLocaleString()}`;
 
 export function BaseLayout() {
-	const [activeProposalId, setActiveProposalId] = useState<string | null>(null);
+    const [activeProposalId, setActiveProposalId] = useState<string | null>(null);
+    const [logsOpen, setLogsOpen] = useState<boolean>(false);
 	const {
 		gameState,
 		suggestions,
@@ -63,15 +65,20 @@ export function BaseLayout() {
 	};
 
 	const handleProposalSelect = async (proposal: PolicyProposal) => {
-		await playTurn({
-			title: proposal.title,
-			description: proposal.description,
-			target_department: proposal.target_department,
-			sustainability_impact: proposal.sustainability_impact,
-			economic_impact: proposal.economic_impact,
-			political_impact: proposal.political_impact,
-		});
-		setActiveProposalId(null);
+		try {
+			await playTurn({
+				title: proposal.title,
+				description: proposal.description,
+				target_department: proposal.target_department,
+				sustainability_impact: proposal.sustainability_impact,
+				economic_impact: proposal.economic_impact,
+				political_impact: proposal.political_impact,
+			});
+			setActiveProposalId(null);
+		} catch (error) {
+			console.error('Failed to play turn:', error);
+			// Error is already handled by the playTurn function in GameContext
+		}
 	};
 
 	const handleStartGame = async () => {
@@ -88,8 +95,8 @@ export function BaseLayout() {
 		await refreshSuggestions();
 	};
 
-	return (
-		<div className="app-shell">
+    return (
+        <div className="app-shell">
 			<div className="app-frame">
 				<header className="app-header" aria-label="Mailopolis city overview">
 					<div className="navbar-brand">
@@ -107,27 +114,27 @@ export function BaseLayout() {
 							<dd>{gameState ? `$${(gameState.city_stats.budget / 1000000).toFixed(1)}M` : '--'}</dd>
 						</div>
 						<div className="city-stat city-stat--sustainability">
-							<dt>Sustainability Score</dt>
+							<dt>Sustainability</dt>
 							<dd>{gameState?.city_stats.sustainability_score ?? '--'}</dd>
 						</div>
 						<div className="city-stat city-stat--economy">
-							<dt>Economic Growth</dt>
+							<dt>Economy</dt>
 							<dd>{gameState ? `${gameState.city_stats.economic_growth}%` : '--'}</dd>
 						</div>
 						<div className="city-stat city-stat--approval">
-							<dt>Public Approval</dt>
+							<dt>Approval</dt>
 							<dd>{gameState ? `${gameState.city_stats.public_approval}%` : '--'}</dd>
 						</div>
 						<div className="city-stat city-stat--infrastructure">
-							<dt>Infrastructure Health</dt>
+							<dt>Infrastructure</dt>
 							<dd>{gameState ? `${gameState.city_stats.infrastructure_health}%` : '--'}</dd>
 						</div>
 						<div className="city-stat city-stat--happiness">
-							<dt>Population Happiness</dt>
+							<dt>Happiness</dt>
 							<dd>{gameState ? `${gameState.city_stats.population_happiness}%` : '--'}</dd>
 						</div>
 						<div className="city-stat city-stat--corruption">
-							<dt>Corruption Level</dt>
+							<dt>Corruption</dt>
 							<dd>{gameState ? `${gameState.city_stats.corruption_level}%` : '--'}</dd>
 						</div>
 					</dl>
@@ -138,59 +145,30 @@ export function BaseLayout() {
 						className="proposal-sidebar"
 						aria-label="Strategic proposals"
 					>
-						<header className="proposal-sidebar__header">
-							<h2 className="proposal-sidebar__title">Strategic Proposals</h2>
-							<p className="proposal-sidebar__subtitle">
-								Latest moves surfaced by the Maylopolis cabinet.
-							</p>
-						</header>
-						<div className="proposal-list">
-							{proposals.length === 0 && (
-								<div className="proposal-list__empty">
-									{hasActiveGame
-										? 'No proposals available yet. Refresh suggestions to pull new ideas from departments.'
-										: 'Start the simulation to receive live proposals from departments.'}
-								</div>
-							)}
-							{proposals.map((proposal) => (
-								<article key={proposal.id} className="proposal-card">
-									<header className="proposal-card__top">
-										<h3>{proposal.title}</h3>
-										<button
-											type="button"
-											className="proposal-card__select"
-											onClick={() => handleProposalSelect(proposal)}
-											disabled={isLoading || !hasActiveGame}
-										>
-											{isLoading ? 'Working…' : hasActiveGame ? 'Select' : 'Start game first'}
-										</button>
-									</header>
-									<div className="proposal-card__summary">
-										<span className="proposal-card__department">
-											{formatDepartmentName(proposal.target_department) || 'Unknown'}
+						{/* Simulation Controls Section */}
+						<div className="simulation-controls">
+							<header className="simulation-controls__header">
+								<h2 className="simulation-controls__title">Simulation Control</h2>
+								<div
+									className={`simulation-controls__status${isLoading ? ' simulation-controls__status--loading' : ''}`}
+								>
+									<span className="simulation-controls__status-dot" aria-hidden="true" />
+									<span>
+										{hasActiveGame
+											? `Turn ${gameState?.turn ?? 0}`
+											: 'Simulation idle'}
+									</span>
+									{activeEvents.length > 0 && (
+										<span className="simulation-controls__events">
+											{activeEvents.length} active events
 										</span>
-										<button
-											type="button"
-											className="proposal-card__info"
-											aria-label={`View details for ${proposal.title}`}
-											onClick={() => handleProposalOpen(proposal.id)}
-										>
-											<span className="proposal-card__info-text">More info</span>
-											<span className="proposal-card__info-icon" aria-hidden="true">
-												→
-											</span>
-										</button>
-									</div>
-									<div className="proposal-card__impacts">
-										<span>S {formatImpactValue(proposal.sustainability_impact)}</span>
-										<span>E {formatImpactValue(proposal.economic_impact)}</span>
-										<span>P {formatImpactValue(proposal.political_impact)}</span>
-									</div>
-								</article>
-							))}
-						</div>
-						<div className="game-controls">
-							<div className="game-controls__buttons">
+									)}
+									{gameState?.is_game_over && (
+										<span className="simulation-controls__badge">Game over</span>
+									)}
+								</div>
+							</header>
+							<div className="simulation-controls__buttons">
 								{!hasActiveGame ? (
 									<button
 										className="start-game-btn"
@@ -225,26 +203,67 @@ export function BaseLayout() {
 									</>
 								)}
 							</div>
-							<div
-								className={`game-controls__meta${isLoading ? ' game-controls__meta--loading' : ''}`}
-							>
-								<span className="game-controls__status-dot" aria-hidden="true" />
-								<span>
+							{error && (
+								<div className="simulation-controls__error" role="alert">
+									{error}
+								</div>
+							)}
+						</div>
+
+						{/* Policy Proposals Section */}
+						<div className="policy-proposals">
+							<header className="policy-proposals__header">
+								<h2 className="policy-proposals__title">Strategic Proposals</h2>
+								<p className="policy-proposals__subtitle">
+									Latest moves surfaced by the Maylopolis cabinet.
+								</p>
+							</header>
+							<div className="proposal-list">
+								{proposals.length === 0 && (
+									<div className="proposal-list__empty">
 										{hasActiveGame
-											? `Turn ${gameState?.turn ?? 0}`
-											: 'Simulation idle'}
-								</span>
-								<span>Active events: {activeEvents.length}</span>
-								{gameState?.is_game_over && (
-									<span className="game-controls__badge">Game over</span>
+											? 'No proposals available yet. Refresh suggestions to pull new ideas from departments.'
+											: 'Start the simulation to receive live proposals from departments.'}
+									</div>
 								)}
+								{proposals.map((proposal) => (
+									<article key={proposal.id} className="proposal-card">
+										<header className="proposal-card__top">
+											<h3>{proposal.title}</h3>
+											<button
+												type="button"
+												className="proposal-card__select"
+												onClick={() => handleProposalSelect(proposal)}
+												disabled={isLoading || !hasActiveGame}
+											>
+												{isLoading ? 'Working…' : hasActiveGame ? 'Select' : 'Start game first'}
+											</button>
+										</header>
+										<div className="proposal-card__summary">
+											<span className="proposal-card__department">
+												{formatDepartmentName(proposal.target_department) || 'Unknown'}
+											</span>
+											<button
+												type="button"
+												className="proposal-card__info"
+												aria-label={`View details for ${proposal.title}`}
+												onClick={() => handleProposalOpen(proposal.id)}
+											>
+												<span className="proposal-card__info-text">More info</span>
+												<span className="proposal-card__info-icon" aria-hidden="true">
+													→
+												</span>
+											</button>
+										</div>
+										<div className="proposal-card__impacts">
+											<span>S {formatImpactValue(proposal.sustainability_impact)}</span>
+											<span>E {formatImpactValue(proposal.economic_impact)}</span>
+											<span>P {formatImpactValue(proposal.political_impact)}</span>
+										</div>
+									</article>
+								))}
 							</div>
 						</div>
-						{error && (
-							<div className="game-error" role="alert">
-								{error}
-							</div>
-						)}
 					</aside>
 
 					<main
@@ -271,9 +290,9 @@ export function BaseLayout() {
 						</div>
 					</main>
 				</div>
-			</div>
+            </div>
 
-			{activeProposal && (
+            {activeProposal && (
 				<div
 					className="proposal-modal"
 					role="dialog"
@@ -346,8 +365,34 @@ export function BaseLayout() {
 								</button>
 							</footer>
 						</div>
-					</div>
-			)}
+                </div>
+            )}
+
+            {/* Logs toggle button, fixed in the viewport */}
+            <button
+                className={`logs-toggle ${logsOpen ? 'active' : ''}`}
+                onClick={() => setLogsOpen(!logsOpen)}
+                style={{
+                    position: 'fixed',
+                    top: 20,
+                    right: 20,
+                    zIndex: 10000,
+                    background: '#00ff88',
+                    color: '#000',
+                    border: 'none',
+                    borderRadius: 8,
+                    padding: '10px 15px',
+                    cursor: 'pointer',
+                    fontSize: 14,
+                    fontWeight: 'bold',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                }}
+            >
+                {logsOpen ? '📋 Hide Logs' : '📋 Show Logs'}
+            </button>
+
+            {/* Logs panel mounted at page level */}
+            <LogsPanel isOpen={logsOpen} onClose={() => setLogsOpen(false)} />
 		</div>
 	);
 }

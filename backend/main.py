@@ -50,15 +50,12 @@ async def root():
     return {"message": "Welcome to Mailopolis! 🏙️"}
 
 
-# Include the Maylopolis router (if available) under /maylopolis
-try:
-    from maylopolis_api import router as maylopolis_router
-    app.include_router(maylopolis_router)
-except Exception:
+
+from maylopolis_api import router as maylopolis_router
+app.include_router(maylopolis_router)
+
     # If the module isn't importable (e.g., missing deps during static analysis),
     # we silently skip including the router so the main app still runs.
-    pass
-
 
 if __name__ == "__main__":
     # Run the FastAPI app directly 
