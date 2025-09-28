@@ -136,6 +136,14 @@
 	--accent: #6f42c1;
 }
 
+.city-stat--approval {
+	--accent: #1c7ed6;
+}
+
+.city-stat--economy {
+	--accent: #f59f00;
+}
+
 
 .app-content {
 	flex: 1;
@@ -154,8 +162,8 @@
 	background: rgba(255, 255, 255, 0.6);
 	border: 1px solid rgba(255, 255, 255, 0.42);
 	backdrop-filter: blur(24px) saturate(180%);
-	min-height: 0;
-	overflow: hidden;
+	max-height: 60vh;
+	overflow-y: auto;
 }
 
 .proposal-sidebar__header {
@@ -305,6 +313,14 @@
 	color: #155b3f;
 }
 
+.proposal-card__select:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+	background: rgba(20, 33, 61, 0.08);
+	color: rgba(20, 33, 61, 0.45);
+	border-color: rgba(20, 33, 61, 0.12);
+}
+
 .proposal-card__summary {
 	display: flex;
 	align-items: center;
@@ -312,6 +328,21 @@
 	gap: 12px;
 	font-size: 0.82rem;
 	color: var(--color-text-muted);
+}
+
+.proposal-card__impacts {
+	display: flex;
+	gap: 8px;
+	font-family: var(--font-mono);
+	font-size: 0.78rem;
+	color: rgba(20, 33, 61, 0.65);
+}
+
+.proposal-card__impacts span {
+	padding: 2px 6px;
+	border-radius: 4px;
+	background: rgba(255, 255, 255, 0.65);
+	border: 1px solid rgba(20, 33, 61, 0.08);
 }
 
 .proposal-card__department {
@@ -337,6 +368,15 @@
 
 .proposal-card__info-icon {
 	font-size: 0.85rem;
+}
+
+.proposal-list__empty {
+	padding: 16px;
+	border-radius: 12px;
+	border: 1px dashed rgba(20, 33, 61, 0.18);
+	background: rgba(255, 255, 255, 0.6);
+	font-size: 0.88rem;
+	color: rgba(20, 33, 61, 0.6);
 }
 
 
@@ -513,6 +553,14 @@
 	color: #0f4633;
 }
 
+.proposal-modal__select:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+	background: rgba(20, 33, 61, 0.08);
+	color: rgba(20, 33, 61, 0.45);
+	border-color: rgba(20, 33, 61, 0.12);
+}
+
 .app-stage__canvas .city-map {
 	height: 100%;
 	width: 100%;
@@ -559,4 +607,129 @@
 	.city-stats {
 		grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
 	}
+}
+
+/* Game controls */
+.game-controls {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	margin-top: 16px;
+	padding: 16px;
+	border-radius: 12px;
+	background: rgba(255, 255, 255, 0.75);
+	border: 1px solid rgba(20, 33, 61, 0.12);
+	box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.game-controls__buttons {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.start-game-btn,
+.refresh-btn {
+	padding: 12px 24px;
+	background: #335dff !important;
+	color: white !important;
+	border: 1px solid #2a4cca !important;
+	border-radius: 6px;
+	font-size: 16px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	min-width: 120px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.start-game-btn:hover,
+.refresh-btn:hover {
+	background: #2a4cca !important;
+	border-color: #1f3aa3 !important;
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(51, 93, 255, 0.28);
+}
+
+.start-game-btn:disabled,
+.refresh-btn:disabled {
+	background: #f8f9fa;
+	color: #6c757d;
+	cursor: not-allowed;
+	opacity: 0.6;
+}
+
+.stop-game-btn {
+	padding: 12px 24px;
+	background: #dc3545 !important;
+	color: white !important;
+	border: 1px solid #c82333 !important;
+	border-radius: 6px;
+	font-size: 16px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	min-width: 120px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.stop-game-btn:hover {
+	background: #c82333 !important;
+	border-color: #bd2130 !important;
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.stop-game-btn:disabled {
+	background: #f8f9fa;
+	color: #6c757d;
+	border-color: #dee2e6;
+	cursor: not-allowed;
+	opacity: 0.6;
+}
+
+.game-controls__meta {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	font-size: 0.85rem;
+	color: rgba(20, 33, 61, 0.65);
+}
+
+.game-controls__meta span {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.game-controls__meta--loading {
+	opacity: 0.7;
+}
+
+.game-controls__status-dot {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: #2b8a3e;
+	box-shadow: 0 0 0 4px rgba(43, 138, 62, 0.15);
+}
+
+.game-controls__badge {
+	padding: 4px 10px;
+	border-radius: 999px;
+	background: rgba(217, 72, 95, 0.12);
+	color: #d9485f;
+	font-size: 0.78rem;
+	font-weight: 600;
+}
+
+.game-error {
+	padding: 12px;
+	border-radius: 8px;
+	background: rgba(217, 72, 95, 0.1);
+	border: 1px solid rgba(217, 72, 95, 0.25);
+	color: #a61e4d;
+	font-size: 0.88rem;
 }

@@ -19,6 +19,9 @@ from agents.agent_personalities import AgentPersonalities
 from game.langchain_game_engine import MaylopolisGameEngine
 from models.game_models import PolicyProposal, Department
 from service.agent_mail import agent_mail_service
+from game.langchain_game_engine import MaylopolisGameEngine
+from models.game_models import PolicyProposal, Department
+
 
 
 class AskProposalRequest(BaseModel):

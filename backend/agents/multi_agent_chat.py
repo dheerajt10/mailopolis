@@ -9,6 +9,7 @@ from models.game_models import PolicyProposal, Department
 from service.async_logger import AsyncLogger
 from service.agent_mail import agent_mail_service
 
+
 if TYPE_CHECKING:
     from agents.langchain_agents import LangChainAgent
 

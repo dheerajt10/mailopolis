@@ -8,6 +8,7 @@ from datetime import datetime
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
 from service.async_logger import AsyncLogger
+
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
@@ -136,6 +137,7 @@ class LangChainAgentManager:
             self.logger.log("📧 Agent email initialization started")
         except Exception as e:
             self.logger.log(f"⚠️ Could not initialize agent emails: {e}")
+
     
     async def evaluate_proposal_by_department(self, proposal: PolicyProposal, 
                                             department: Department,
@@ -212,6 +214,7 @@ class LangChainAgentManager:
             )
         except Exception as e:
             self.logger.log(f"⚠️ Could not send proposal email: {e}")
+
         
         # Run the independent political discussion
         political_discussion = await self.chat_system.discuss_proposal(proposal, game_context)

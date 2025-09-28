@@ -1,0 +1,30 @@
+{
+  "name": "mailopolis-solana-ledger",
+  "version": "1.0.0",
+  "description": "Solana ledger for Mailopolis city sustainability game",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "deploy": "tsx src/deploy.ts",
+    "generate-keys": "tsx src/generate-keys.ts",
+    "test": "tsx tests/run-all-tests.ts",
+    "test:city": "tsx tests/test-city-state.ts",
+    "test:mail": "tsx tests/test-mail-ledger.ts",
+    "test:transaction": "tsx tests/test-transaction-ledger.ts",
+    "test:integration": "tsx tests/test-ledger-integration.ts",
+    "example": "tsx src/example-usage.ts"
+  },
+  "dependencies": {
+    "@solana/kit": "^3.0.3",
+    "@solana/spl-token": "^0.1.8",
+    "@solana/web3.js": "^1.98.4",
+    "bs58": "^6.0.0",
+    "dotenv": "^17.2.2",
+    "tsx": "^4.6.0",
+    "typescript": "^5.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0"
+  }
+}
