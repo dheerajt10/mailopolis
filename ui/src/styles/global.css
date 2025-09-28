@@ -1,0 +1,56 @@
+:root {
+  color-scheme: dark;
+  --color-bg: #04070a;
+  --color-bg-alt: #0a111a;
+  --color-surface: rgba(12, 20, 28, 0.85);
+  --color-surface-border: rgba(42, 227, 147, 0.35);
+  --color-primary: #2ae393;
+  --color-secondary: #6bf4ff;
+  --color-warning: #ffb347;
+  --color-danger: #ff6b6b;
+  --color-text-primary: #d8fff0;
+  --color-text-secondary: rgba(216, 255, 240, 0.65);
+  --glow-strong: 0 0 24px rgba(42, 227, 147, 0.45);
+  --glow-soft: 0 0 12px rgba(107, 244, 255, 0.35);
+  --font-terminal: 'IBM Plex Mono', 'Space Mono', 'Fira Mono', monospace;
+  --font-ui: 'Inter', 'Archivo', 'Segoe UI', sans-serif;
+  --layout-dock-width: 280px;
+  --layout-gap: 18px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-ui);
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+}
+
+#root {
+  flex: 1;
+  display: flex;
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --layout-dock-width: 220px;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --layout-dock-width: 0px;
+    --layout-gap: 12px;
+  }
+
+  body {
+    padding: 0;
+  }
+}

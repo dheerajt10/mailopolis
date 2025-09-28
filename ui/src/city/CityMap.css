@@ -1,0 +1,348 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+
+.city-title {
+	color: #00ff88;
+	font-size: 24px;
+	font-weight: bold;
+	text-shadow: 0 0 10px #00ff88;
+	margin-bottom: 20px;
+	font-family: 'JetBrains Mono', monospace;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+	position: relative;
+	z-index: 20;
+}
+
+.city-map {
+	width: 100%;
+	height: 100%;
+	min-width: 800px;
+	min-height: 600px;
+	background: #003355;
+	position: relative;
+	border: 1px solid #004466;
+	border-radius: 8px;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 20px;
+}
+
+/* Grid background */
+.city-map::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-image: linear-gradient(
+			rgba(0, 255, 136, 0.1) 1px,
+			transparent 1px
+		),
+		linear-gradient(90deg, rgba(0, 255, 136, 0.1) 1px, transparent 1px);
+	background-size: 40px 40px;
+	opacity: 0.3;
+}
+
+/* Roads */
+.road {
+	position: absolute;
+	background: #1a2a3a;
+	border: 1px solid #334455;
+}
+
+.road-horizontal {
+	height: 20px;
+	width: 100%;
+	top: 0;
+}
+
+.road-vertical {
+	width: 20px;
+	height: 100%;
+	left: 0;
+}
+
+.road-main-h {
+	top: 290px;
+	background: linear-gradient(0deg, #2a3a4a 0%, #1a2a3a 50%, #2a3a4a 100%);
+	border-color: #445566;
+}
+
+.road-secondary-h1 {
+	top: 140px;
+}
+
+.road-secondary-h2 {
+	top: 440px;
+}
+
+.road-main-v {
+	left: 390px;
+	background: linear-gradient(90deg, #2a3a4a 0%, #1a2a3a 50%, #2a3a4a 100%);
+	border-color: #445566;
+}
+
+.road-secondary-v1 {
+	left: 190px;
+}
+
+.road-secondary-v2 {
+	left: 590px;
+}
+
+/* Buildings */
+.building {
+	position: absolute;
+	border: 2px solid;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 24px;
+	border-radius: 4px;
+}
+
+.building:hover {
+	transform: scale(1.05);
+	box-shadow: 0 0 20px currentColor;
+}
+
+.building.active {
+	animation: pulse-building 2s infinite;
+}
+
+@keyframes pulse-building {
+	0%,
+	100% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.08);
+	}
+}
+
+/* City Hall */
+.city-hall {
+	background: linear-gradient(135deg, #4488ff 0%, #2266cc 100%);
+	border-color: #66aaff;
+}
+
+/* Power Plant */
+.power-plant {
+	background: linear-gradient(135deg, #ffaa00 0%, #ff6600 100%);
+	border-color: #ffcc00;
+	border-radius: 8px;
+}
+
+.power-plant::after {
+	content: '';
+	position: absolute;
+	top: -10px;
+	right: 20px;
+	width: 0;
+	height: 0;
+	border-left: 8px solid transparent;
+	border-right: 8px solid transparent;
+	border-bottom: 20px solid #ffcc00;
+	animation: steam 2s infinite;
+}
+
+@keyframes steam {
+	0%,
+	100% {
+		opacity: 0.7;
+		transform: translateY(0);
+	}
+	50% {
+		opacity: 1;
+		transform: translateY(-5px);
+	}
+}
+
+/* Hospital */
+.hospital {
+	background: linear-gradient(135deg, #ff4444 0%, #cc2222 100%);
+	border-color: #ff6666;
+}
+
+/* Police Station */
+.police {
+	background: linear-gradient(135deg, #4444ff 0%, #2222cc 100%);
+	border-color: #6666ff;
+}
+
+/* Transit Hub */
+.transit-hub {
+	background: linear-gradient(135deg, #00ccff 0%, #0088cc 100%);
+	border-color: #00ffff;
+}
+
+/* Residential Houses */
+.house {
+	background: linear-gradient(135deg, #88ff88 0%, #44cc44 100%);
+	border-color: #aaffaa;
+	border-radius: 6px;
+}
+
+/* Commercial Buildings */
+.commercial {
+	background: linear-gradient(135deg, #ff88ff 0%, #cc44cc 100%);
+	border-color: #ffaaff;
+}
+
+/* Parks */
+.park {
+	background: linear-gradient(135deg, #22aa22 0%, #116611 100%);
+	border: 2px solid #44cc44;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* Labels */
+.building-label {
+	position: absolute;
+	bottom: -25px;
+	left: 50%;
+	transform: translateX(-50%);
+	color: #00ccff;
+	font-size: 10px;
+	text-align: center;
+	white-space: nowrap;
+	background: rgba(0, 17, 34, 0.8);
+	padding: 2px 6px;
+	border-radius: 4px;
+	border: 1px solid #004466;
+	font-family: 'JetBrains Mono', monospace;
+}
+
+/* Connection lines for active communications */
+.connection-line {
+	position: absolute;
+	height: 2px;
+	background: linear-gradient(90deg, transparent, #00ff88, transparent);
+	opacity: 0;
+	z-index: 10;
+	animation: data-flow 3s ease-in-out infinite;
+}
+
+@keyframes data-flow {
+	0% {
+		opacity: 0;
+	}
+	50% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0;
+	}
+}
+
+/* Status indicators */
+.status-indicator {
+	position: absolute;
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	top: -6px;
+	right: -6px;
+	animation: blink 2s infinite;
+}
+
+.status-active {
+	background: #00ff88;
+	box-shadow: 0 0 10px #00ff88;
+}
+
+.status-warning {
+	background: #ffaa00;
+	box-shadow: 0 0 10px #ffaa00;
+}
+
+.status-crisis {
+	background: #ff4444;
+	box-shadow: 0 0 10px #ff4444;
+}
+
+@keyframes blink {
+	0%,
+	50% {
+		opacity: 1;
+	}
+	51%,
+	100% {
+		opacity: 0.3;
+	}
+}
+
+/* Legend */
+.legend {
+	position: absolute;
+	top: 20px;
+	right: 20px;
+	background: rgba(0, 17, 34, 0.9);
+	border: 1px solid #004466;
+	border-radius: 8px;
+	padding: 15px;
+	color: #00ccff;
+	font-size: 12px;
+	font-family: 'JetBrains Mono', monospace;
+}
+
+.legend-item {
+	display: flex;
+	align-items: center;
+	margin-bottom: 8px;
+	gap: 10px;
+}
+
+.legend-color {
+	width: 20px;
+	height: 15px;
+	border-radius: 3px;
+	border: 1px solid currentColor;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+	.city-map {
+		width: 100%;
+		max-width: 800px;
+		height: 450px;
+	}
+
+	.legend {
+		position: relative;
+		top: auto;
+		right: auto;
+		margin-top: 20px;
+		width: 100%;
+	}
+}
+
+@media (max-width: 600px) {
+	.city-container {
+		padding: 15px;
+	}
+
+	.city-map {
+		height: 350px;
+	}
+
+	.building {
+		font-size: 18px;
+	}
+
+	.building-label {
+		font-size: 8px;
+	}
+
+	.city-title {
+		font-size: 18px;
+	}
+}
