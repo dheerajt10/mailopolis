@@ -1,0 +1,116 @@
+{
+  "proposal_id": "Solar_Panel_Incentive_Program",
+  "timestamp": "2025-09-28T07:46:13.570716",
+  "messages": [
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "",
+      "timestamp": "2025-09-28T07:45:39.850842",
+      "message_type": "private_information_sharing",
+      "references": [
+        "Maria Santos"
+      ]
+    },
+    {
+      "speaker": "Maria Santos",
+      "department": "Transportation",
+      "content": "",
+      "timestamp": "2025-09-28T07:45:39.850871",
+      "message_type": "private_information_sharing_response",
+      "references": [
+        "Dr. Marcus Chen"
+      ]
+    },
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "",
+      "timestamp": "2025-09-28T07:45:46.975332",
+      "message_type": "private_general_discussion",
+      "references": [
+        "Dr. Sarah Rodriguez"
+      ]
+    },
+    {
+      "speaker": "Dr. Sarah Rodriguez",
+      "department": "Housing",
+      "content": "",
+      "timestamp": "2025-09-28T07:45:46.975351",
+      "message_type": "private_general_discussion_response",
+      "references": [
+        "Dr. Marcus Chen"
+      ]
+    },
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "",
+      "timestamp": "2025-09-28T07:45:55.280192",
+      "message_type": "private_information_sharing",
+      "references": [
+        "James Morrison"
+      ]
+    },
+    {
+      "speaker": "James Morrison",
+      "department": "EconomicDevelopment",
+      "content": "",
+      "timestamp": "2025-09-28T07:45:55.280200",
+      "message_type": "private_information_sharing_response",
+      "references": [
+        "Dr. Marcus Chen"
+      ]
+    },
+    {
+      "speaker": "Maria Santos",
+      "department": "Transportation",
+      "content": "",
+      "timestamp": "2025-09-28T07:46:03.262931",
+      "message_type": "private_general_discussion",
+      "references": [
+        "James Morrison"
+      ]
+    },
+    {
+      "speaker": "James Morrison",
+      "department": "EconomicDevelopment",
+      "content": "",
+      "timestamp": "2025-09-28T07:46:03.263583",
+      "message_type": "private_general_discussion_response",
+      "references": [
+        "Maria Santos"
+      ]
+    },
+    {
+      "speaker": "Maria Santos",
+      "department": "Transportation",
+      "content": "",
+      "timestamp": "2025-09-28T07:46:07.021906",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    },
+    {
+      "speaker": "Elena Vasquez",
+      "department": "Water",
+      "content": "",
+      "timestamp": "2025-09-28T07:46:10.520819",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    },
+    {
+      "speaker": "Citizens Council Representative",
+      "department": "Citizens",
+      "content": "",
+      "timestamp": "2025-09-28T07:46:13.570415",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    }
+  ]
+}
