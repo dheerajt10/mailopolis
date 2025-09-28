@@ -31,12 +31,14 @@ async def root():
     return {"message": "Welcome to Mailopolis! 🏙️"}
 
 
-@app.get("/api/agents/personalities", response_model=List[AgentPersonality])
-async def get_all_agent_personalities():
-    """Retrieve all agent personalities."""
-    personalities = AgentPersonalities.get_all_personalities()
-    return list(personalities.values())
-
+# Include the Maylopolis router (if available) under /maylopolis
+try:
+    from maylopolis_api import router as maylopolis_router
+    app.include_router(maylopolis_router)
+except Exception:
+    # If the module isn't importable (e.g., missing deps during static analysis),
+    # we silently skip including the router so the main app still runs.
+    pass
 
 
 if __name__ == "__main__":

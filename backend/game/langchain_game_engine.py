@@ -82,179 +82,8 @@ class MaylopolisGameEngine:
             'public_approval': 80,
             'population_happiness': 80
         }
-        
-    async def start_new_game(self) -> Dict[str, Any]:
-        """Initialize a new game"""
-        print("🏛️  Starting new Mailopolis game...")
-        print(f"Initial city stats: {self.city_stats.to_dict()}")
-        
-        self.turn_number = 0
-        self.active_events = []
-        self.game_history = []
-        self.is_game_over = False
-        
-        # Generate initial scenario
-        initial_events = await self._generate_initial_events()
-        self.active_events.extend(initial_events)
-        
-        return {
-            'status': 'started',
-            'turn': self.turn_number,
-            'city_stats': self.city_stats.to_dict(),
-            'active_events': [asdict(event) for event in self.active_events],
-            'message': 'Welcome to Mailopolis! Your city needs strong leadership.'
-        }
-    
-    async def play_turn(self, player_proposals: List[PolicyProposal]) -> Dict[str, Any]:
-        """Play one turn of the game with player-submitted proposals"""
-        if self.is_game_over:
-            return {'status': 'game_over', 'message': 'Game has ended'}
-        
-        if not player_proposals:
-            return {
-                'status': 'waiting_for_proposals',
-                'message': 'Please submit at least one policy proposal to proceed.',
-                'turn': self.turn_number,
-                'city_stats': self.city_stats.to_dict(),
-                'active_events': [asdict(event) for event in self.active_events]
-            }
-        
-        self.turn_number += 1
-        print(f"\n🗓️  TURN {self.turn_number}")
-        print("=" * 50)
-        print(f"Processing {len(player_proposals)} player proposals...")
-        
-        # Phase 1: Handle ongoing events and generate new ones
-        await self._process_events()
-        
-        # Phase 2: Use player's proposals
-        proposals = player_proposals
-        
-        # Phase 3: Political maneuvering and decisions
-        decisions = []
-        political_consequences = {}
-        
-        for proposal in proposals:
-            print(f"\n📋 Processing proposal: {proposal.title}")
-            
-            # Run the political discussion system
-            discussion_result = await self.agent_manager.discuss_and_evaluate_proposal(
-                proposal, self._get_game_context()
-            )
-            
-            mayor_decision = discussion_result['mayor_decision']
-            
-            # Apply consequences of the decision
-            consequences = self._calculate_decision_consequences(
-                proposal, mayor_decision, discussion_result
-            )
-            
-            decisions.append({
-                'proposal': proposal.dict() if hasattr(proposal, 'dict') else proposal.__dict__,
-                'mayor_decision': mayor_decision.dict() if hasattr(mayor_decision, 'dict') else mayor_decision.__dict__,
-                'political_discussion': discussion_result,
-                'consequences': consequences
-            })
-            
-            # Apply stat changes
-            self.city_stats.apply_impacts(consequences['stat_changes'])
-            
-            # Track political consequences
-            political_consequences.update(consequences['political_effects'])
-            
-        # Phase 4: End of turn processing
-        end_of_turn_effects = await self._process_end_of_turn()
-        
-        # Phase 5: Check win/lose conditions
-        game_status = self._check_game_status()
-        
-        # Create turn record
-        turn_record = Turn(
-            turn_number=self.turn_number,
-            city_stats=CityStats(**self.city_stats.to_dict()),
-            active_events=self.active_events.copy(),
-            proposals_this_turn=proposals,
-            decisions_made=decisions,
-            political_consequences=political_consequences
-        )
-        self.game_history.append(turn_record)
-        
-        return {
-            'status': game_status['status'],
-            'turn': self.turn_number,
-            'city_stats': self.city_stats.to_dict(),
-            'decisions_made': decisions,
-            'active_events': [asdict(event) for event in self.active_events],
-            'political_consequences': political_consequences,
-            'end_of_turn_effects': end_of_turn_effects,
-            'game_message': game_status['message'],
-            'is_game_over': self.is_game_over
-        }
-    
-    async def _process_events(self):
-        """Process ongoing events and generate new ones"""
-        # Process existing events
-        events_to_remove = []
-        for event in self.active_events:
-            event.duration -= 1
-            if event.duration <= 0:
-                events_to_remove.append(event)
-                print(f"⏰ Event concluded: {event.title}")
-        
-        # Remove expired events
-        for event in events_to_remove:
-            self.active_events.remove(event)
-        
-        # Generate new random events
-        if random.random() < self.event_probability:
-            new_event = await self._generate_random_event()
-            if new_event:
-                self.active_events.append(new_event)
-                print(f"🚨 New event: {new_event.title}")
-        
-        # Check for crisis events based on low stats
-        crisis_event = await self._check_for_crisis()
-        if crisis_event:
-            self.active_events.append(crisis_event)
-            print(f"💥 CRISIS: {crisis_event.title}")
-    
-    async def get_suggested_proposals(self) -> List[PolicyProposal]:
-        """Generate suggested proposals for the player based on current game state"""
-        proposals = []
-        
-        # Generate 2-4 suggested proposals per turn based on city needs
-        num_suggestions = random.randint(2, 4)
-        
-        for i in range(num_suggestions):
-            # Choose departments that have the most relevant expertise for current issues
-            relevant_dept = self._get_most_relevant_department()
-            
-            proposal = await self._generate_contextual_proposal(relevant_dept)
-            if proposal:
-                proposals.append(proposal)
-        
-        return proposals
-    
-    def _get_most_relevant_department(self) -> Department:
-        """Get the department most relevant to current city issues"""
-        
-        if self.city_stats.sustainability_score < 50:
-            return random.choice([Department.ENERGY, Department.TRANSPORTATION])
-        elif self.city_stats.public_approval < 50:
-            return random.choice([Department.HOUSING, Department.CITIZENS])
-        elif self.city_stats.infrastructure_health < 50:
-            return random.choice([Department.WATER, Department.WASTE])
-        elif self.city_stats.economic_growth < 50:
-            return Department.ECONOMIC_DEV
-        else:
-            # Random department when things are going well
-            return random.choice([dept for dept in Department if dept != Department.MAYOR])
-    
-    async def _generate_contextual_proposal(self, department: Department) -> Optional[PolicyProposal]:
-        """Generate a proposal that makes sense given current game state"""
-        
-        # Base proposals based on department and current city needs
-        proposal_templates = {
+        # Centralized proposal templates used by proposal generation and suggestions
+        self.proposal_templates = {
             Department.ENERGY: {
                 'low_sustainability': {
                     'title': 'Emergency Renewable Energy Initiative',
@@ -306,18 +135,289 @@ class MaylopolisGameEngine:
                     'sustainability_impact': 25, 'economic_impact': -15, 'political_impact': 10
                 }
             }
-            # Add more departments as needed
+            ,
+            Department.WASTE: {
+                'normal': {
+                    'title': 'Citywide Composting Program',
+                    'description': 'Establish curbside compost pickup and community compost hubs.',
+                    'sustainability_impact': 10, 'economic_impact': -5, 'political_impact': 8
+                },
+                'low_budget': {
+                    'title': 'Waste Reduction Grants',
+                    'description': 'Provide small grants to businesses that reduce single-use plastics.',
+                    'sustainability_impact': 8, 'economic_impact': 5, 'political_impact': 4
+                }
+            },
+            Department.WATER: {
+                'normal': {
+                    'title': 'Stormwater Green Infrastructure',
+                    'description': 'Install bioswales and rain gardens to reduce runoff and improve water quality.',
+                    'sustainability_impact': 12, 'economic_impact': -8, 'political_impact': 6
+                },
+                'low_budget': {
+                    'title': 'Water Use Efficiency Rebates',
+                    'description': 'Offer rebates for low-flow fixtures and drought-resistant landscaping.',
+                    'sustainability_impact': 8, 'economic_impact': 3, 'political_impact': 5
+                }
+            },
+            Department.ECONOMIC_DEV: {
+                'normal': {
+                    'title': 'Green Jobs Training Initiative',
+                    'description': 'Fund workforce development programs for green technology jobs.',
+                    'sustainability_impact': 7, 'economic_impact': 10, 'political_impact': 6
+                },
+                'low_approval': {
+                    'title': 'Small Business Support Fund',
+                    'description': 'Provide microgrants and counseling to local small businesses.',
+                    'sustainability_impact': 2, 'economic_impact': 12, 'political_impact': 20
+                }
+            },
+            Department.CITIZENS: {
+                'normal': {
+                    'title': 'Community Climate Education Campaign',
+                    'description': 'Run workshops and outreach to increase awareness of sustainability actions.',
+                    'sustainability_impact': 5, 'economic_impact': 0, 'political_impact': 10
+                },
+                'low_happiness': {
+                    'title': 'Neighborhood Improvement Grants',
+                    'description': 'Small grants for resident-led neighborhood beautification projects.',
+                    'sustainability_impact': 3, 'economic_impact': 2, 'political_impact': 15
+                }
+            }
+            # Additional departments may be added to this mapping as needed
         }
+        # In-engine logging pub/sub: subscribers receive asyncio.Queue instances
+        self._log_subscribers: List[asyncio.Queue] = []
+        # Keep a bounded history of emitted logs for new subscribers
+        self._log_history: List[str] = []
+        
+    async def start_new_game(self) -> Dict[str, Any]:
+        """Initialize a new game"""
+        self._emit_log("🏛️  Starting new Mailopolis game...")
+        self._emit_log(f"Initial city stats: {self.city_stats.to_dict()}")
+        
+        self.turn_number = 0
+        self.active_events = []
+        self.game_history = []
+        self.is_game_over = False
+        
+        # Generate initial scenario
+        initial_events = await self._generate_initial_events()
+        self.active_events.extend(initial_events)
+        
+        return {
+            'status': 'started',
+            'turn': self.turn_number,
+            'city_stats': self.city_stats.to_dict(),
+            'active_events': [asdict(event) for event in self.active_events],
+            'message': 'Welcome to Mailopolis! Your city needs strong leadership.'
+        }
+    
+    async def play_turn(self, proposal: PolicyProposal) -> Dict[str, Any]:
+        """Play exactly one turn of the game with a single player-submitted proposal.
+
+        Accepts a single PolicyProposal. Calling code must submit one proposal per call.
+        """
+
+        if self.is_game_over:
+            return {'status': 'game_over', 'message': 'Game has ended'}
+
+        # Begin processing a single proposal as one turn
+        self.turn_number += 1
+        self._emit_log(f"\n🗓️  TURN {self.turn_number}")
+        self._emit_log("=" * 50)
+        self._emit_log(f"Processing proposal: {proposal.title}")
+
+        # Phase 1: Handle ongoing events and generate new ones
+        await self._process_events()
+
+        # Phase 2 & 3: Political maneuvering and decisions for this proposal
+        discussion_result = await self.agent_manager.discuss_and_evaluate_proposal(
+            proposal, self._get_game_context()
+        )
+
+        mayor_decision = discussion_result['mayor_decision']
+
+        consequences = self._calculate_decision_consequences(
+            proposal, mayor_decision, discussion_result
+        )
+
+        # Apply stat changes for this turn
+        self.city_stats.apply_impacts(consequences['stat_changes'])
+
+        # Track political consequences
+        political_effects = consequences['political_effects']
+
+        # Phase 4: End of turn processing
+        end_of_turn_effects = await self._process_end_of_turn()
+
+        # Phase 5: Check win/lose conditions
+        game_status = self._check_game_status()
+
+        # Record the turn
+        turn_record = Turn(
+            turn_number=self.turn_number,
+            city_stats=CityStats(**self.city_stats.to_dict()),
+            active_events=self.active_events.copy(),
+            proposals_this_turn=[proposal],
+            decisions_made=[{
+                'proposal': proposal.dict() if hasattr(proposal, 'dict') else proposal.__dict__,
+                'mayor_decision': mayor_decision.dict() if hasattr(mayor_decision, 'dict') else mayor_decision.__dict__,
+                'political_discussion': discussion_result,
+                'consequences': consequences
+            }],
+            political_consequences=political_effects
+        )
+        self.game_history.append(turn_record)
+
+        # Return single-turn result
+        return {
+            'status': game_status['status'],
+            'turn': self.turn_number,
+            'city_stats': self.city_stats.to_dict(),
+            'decision': {
+                'proposal': proposal.dict() if hasattr(proposal, 'dict') else proposal.__dict__,
+                'mayor_decision': mayor_decision.dict() if hasattr(mayor_decision, 'dict') else mayor_decision.__dict__,
+                'political_discussion': discussion_result,
+                'consequences': consequences
+            },
+            'active_events': [asdict(event) for event in self.active_events],
+            'political_consequences': political_effects,
+            'end_of_turn_effects': end_of_turn_effects,
+            'game_message': game_status['message'],
+            'is_game_over': self.is_game_over
+        }
+    
+    async def _process_events(self):
+        """Process ongoing events and generate new ones"""
+        # Process existing events
+        events_to_remove = []
+        for event in self.active_events:
+            event.duration -= 1
+            if event.duration <= 0:
+                events_to_remove.append(event)
+                self._emit_log(f"⏰ Event concluded: {event.title}")
+        
+        # Remove expired events
+        for event in events_to_remove:
+            self.active_events.remove(event)
+        
+        # Generate new random events
+        if random.random() < self.event_probability:
+            new_event = await self._generate_random_event()
+            if new_event:
+                self.active_events.append(new_event)
+                self._emit_log(f"🚨 New event: {new_event.title}")
+        
+        # Check for crisis events based on low stats
+        crisis_event = await self._check_for_crisis()
+        if crisis_event:
+            self.active_events.append(crisis_event)
+            self._emit_log(f"💥 CRISIS: {crisis_event.title}")
+
+    def _emit_log(self, message: str) -> None:
+        """Emit a log message to all subscribers and record it in history.
+
+        Non-blocking: uses put_nowait and falls back to scheduling a put.
+        """
+        from datetime import datetime as _dt
+        ts = _dt.utcnow().isoformat()
+        full = f"[{ts}] {message}"
+
+        # keep bounded history
+        try:
+            self._log_history.append(full)
+            if len(self._log_history) > 500:
+                self._log_history.pop(0)
+        except Exception:
+            pass
+
+        # dispatch to subscribers
+        for q in list(self._log_subscribers):
+            try:
+                q.put_nowait(full)
+            except Exception:
+                try:
+                    asyncio.create_task(q.put(full))
+                except Exception:
+                    continue
+
+    async def subscribe_logs(self) -> asyncio.Queue:
+        """Return an asyncio.Queue for consuming logs. Caller must unsubscribe."""
+        q: asyncio.Queue = asyncio.Queue()
+        self._log_subscribers.append(q)
+        # Push history to new subscriber
+        for item in self._log_history:
+            try:
+                q.put_nowait(item)
+            except Exception:
+                await q.put(item)
+        return q
+
+    async def unsubscribe_logs(self, q: asyncio.Queue) -> None:
+        try:
+            self._log_subscribers.remove(q)
+        except ValueError:
+            pass
+    
+    async def get_suggested_proposals(self) -> List[PolicyProposal]:
+        """Generate suggested proposals for the player based on current game state"""
+        proposals: List[PolicyProposal] = []
+
+        # Return every template-driven proposal available in the engine's templates.
+        # This makes suggestions deterministic and exposes all pre-defined policy ideas
+        # so the caller (UI or player) can choose which to submit.
+        for dept, templates in self.proposal_templates.items():
+            for key, template in templates.items():
+                # Create a PolicyProposal from the template
+                prop = PolicyProposal(
+                    title=template['title'],
+                    description=template['description'],
+                    proposed_by=f"ai_department_{dept.value}",
+                    target_department=dept,
+                    sustainability_impact=template.get('sustainability_impact', 0),
+                    economic_impact=template.get('economic_impact', 0),
+                    political_impact=template.get('political_impact', 0)
+                )
+                proposals.append(prop)
+
+        return proposals
+    
+    def _get_most_relevant_department(self) -> Department:
+        """Get the department most relevant to current city issues"""
+        
+        if self.city_stats.sustainability_score < 50:
+            return random.choice([Department.ENERGY, Department.TRANSPORTATION])
+        elif self.city_stats.public_approval < 50:
+            return random.choice([Department.HOUSING, Department.CITIZENS])
+        elif self.city_stats.infrastructure_health < 50:
+            return random.choice([Department.WATER, Department.WASTE])
+        elif self.city_stats.economic_growth < 50:
+            return Department.ECONOMIC_DEV
+        else:
+            # Random department when things are going well
+            return random.choice([dept for dept in Department if dept != Department.MAYOR])
+    
+    async def _generate_contextual_proposal(self, department: Department) -> Optional[PolicyProposal]:
+        """Generate a proposal that makes sense given current game state"""
+        
+        # Use the centralized templates defined on the engine
+        proposal_templates = self.proposal_templates
         
         # Determine current city situation
         situation = self._assess_city_situation()
         
         # Select appropriate proposal template
         dept_proposals = proposal_templates.get(department, {})
+        if not dept_proposals:
+            # No templates for this department
+            return None
+
         if situation in dept_proposals:
             template = dept_proposals[situation]
         else:
-            template = dept_proposals.get('normal', dept_proposals[next(iter(dept_proposals))])
+            # Prefer 'normal' template when available, otherwise fall back to first defined
+            template = dept_proposals.get('normal') or next(iter(dept_proposals.values()))
         
         return PolicyProposal(
             title=template['title'],
