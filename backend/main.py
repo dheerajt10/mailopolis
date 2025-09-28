@@ -7,6 +7,8 @@ from models.game_models import (
     GameState, EmailThread, PlayerAction, ActionOutcome, 
     SustainabilityGameState, PolicyProposal, Department
 )
+from agents.agent_personalities import AgentPersonalities, AgentPersonality
+
 
 app = FastAPI(
     title="Mailopolis - Adversarial Sustainability Game",
@@ -27,6 +29,14 @@ app.add_middleware(
 @app.get("/")
 async def root():
     return {"message": "Welcome to Mailopolis! 🏙️"}
+
+
+@app.get("/api/agents/personalities", response_model=List[AgentPersonality])
+async def get_all_agent_personalities():
+    """Retrieve all agent personalities."""
+    personalities = AgentPersonalities.get_all_personalities()
+    return list(personalities.values())
+
 
 
 if __name__ == "__main__":

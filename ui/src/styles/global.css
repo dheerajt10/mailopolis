@@ -1,56 +1,47 @@
 :root {
-  color-scheme: dark;
-  --color-bg: #04070a;
-  --color-bg-alt: #0a111a;
-  --color-surface: rgba(12, 20, 28, 0.85);
-  --color-surface-border: rgba(42, 227, 147, 0.35);
-  --color-primary: #2ae393;
-  --color-secondary: #6bf4ff;
-  --color-warning: #ffb347;
-  --color-danger: #ff6b6b;
-  --color-text-primary: #d8fff0;
-  --color-text-secondary: rgba(216, 255, 240, 0.65);
-  --glow-strong: 0 0 24px rgba(42, 227, 147, 0.45);
-  --glow-soft: 0 0 12px rgba(107, 244, 255, 0.35);
-  --font-terminal: 'IBM Plex Mono', 'Space Mono', 'Fira Mono', monospace;
-  --font-ui: 'Inter', 'Archivo', 'Segoe UI', sans-serif;
-  --layout-dock-width: 280px;
-  --layout-gap: 18px;
+	color-scheme: light;
+	--color-background: #edf2ff;
+	--color-background-alt: #f8fbff;
+	--color-surface: rgba(255, 255, 255, 0.8);
+	--color-border: rgba(120, 134, 171, 0.18);
+	--color-primary: #335dff;
+	--color-accent: #ff8a5b;
+	--color-text: #14213d;
+	--color-text-muted: rgba(20, 33, 61, 0.68);
+	--radius-large: 28px;
+	--radius-medium: 18px;
+	--shadow-soft: 0 24px 60px rgba(34, 52, 84, 0.14);
+	--font-ui: 'Inter', 'SF Pro Display', 'Segoe UI', sans-serif;
+	--font-mono: 'IBM Plex Mono', 'Space Grotesk', monospace;
 }
 
 * {
-  box-sizing: border-box;
+	box-sizing: border-box;
 }
 
 body {
-  margin: 0;
-  min-height: 100vh;
-  font-family: var(--font-ui);
-  background: var(--color-bg);
-  color: var(--color-text-primary);
-  display: flex;
-  justify-content: center;
-  align-items: stretch;
+	margin: 0;
+	min-height: 100vh;
+	font-family: var(--font-ui);
+	color: var(--color-text);
+	background: radial-gradient(
+			circle at 15% 20%,
+			rgba(51, 93, 255, 0.2),
+			transparent 55%
+		),
+		radial-gradient(
+			circle at 80% 0%,
+			rgba(255, 138, 91, 0.2),
+			transparent 50%
+		),
+		var(--color-background);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	overflow: hidden;
 }
 
 #root {
-  flex: 1;
-  display: flex;
-}
-
-@media (max-width: 1024px) {
-  :root {
-    --layout-dock-width: 220px;
-  }
-}
-
-@media (max-width: 768px) {
-  :root {
-    --layout-dock-width: 0px;
-    --layout-gap: 12px;
-  }
-
-  body {
-    padding: 0;
-  }
+	flex: 1;
+	display: flex;
 }
