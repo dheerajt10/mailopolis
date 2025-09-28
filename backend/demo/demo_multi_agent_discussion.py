@@ -11,8 +11,8 @@ from datetime import datetime
 
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from load_env import load_environment_variables, print_api_status
 
-os.environ["OPENAI_API_KEY"] = "sk-proj-lP8RgBe1BkZstd5h1rNcT3BlbkFJirH5YElfKbMTNZgMreZE"
 
 from agents.langchain_agents import LangChainAgentManager
 from models.game_models import PolicyProposal, Department, SustainabilityGameState
