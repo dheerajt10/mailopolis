@@ -44,8 +44,8 @@ _agent_manager: Optional[LangChainAgentManager] = None
 async def get_engine() -> MaylopolisGameEngine:
     global _engine, _agent_manager
     if _engine is None:
-        _agent_manager = LangChainAgentManager()
-        _engine = MaylopolisGameEngine(agent_manager=_agent_manager)
+        # Let the engine create its own agent manager with shared logger
+        _engine = MaylopolisGameEngine()
         # start a fresh game on creation
         await _engine.start_new_game()
     return _engine

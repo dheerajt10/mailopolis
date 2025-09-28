@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 
 from agents.langchain_agents import LangChainAgentManager
+from service.async_logger import AsyncLogger
 from models.game_models import (
     PolicyProposal, Department, SustainabilityGameState, 
     SustainabilityMetrics, EnergyMix, GameState
@@ -64,12 +65,13 @@ class Turn:
 
 class MaylopolisGameEngine:
     """Main game engine that runs the city simulation"""
-    
-    def __init__(self, agent_manager: LangChainAgentManager = None):
-        # If agent_manager is not provided, create one and pass emit_log
+
+    def __init__(self, agent_manager: LangChainAgentManager = None, logger: AsyncLogger = None):
+        self.logger = logger or AsyncLogger()
+        # If agent_manager is not provided, create one and pass logger
         if agent_manager is None:
             from agents.langchain_agents import LangChainAgentManager
-            agent_manager = LangChainAgentManager(emit_log=self.emit_log)
+            agent_manager = LangChainAgentManager(logger=self.logger)
         self.agent_manager = agent_manager
         self.city_stats = CityStats()
         self.turn_number = 0
@@ -77,7 +79,7 @@ class MaylopolisGameEngine:
         self.game_history: List[Turn] = []
         self.max_turns = 50  # Game length
         self.is_game_over = False
-        
+
         # Game balance parameters
         self.event_probability = 0.3  # 30% chance of random event each turn
         self.crisis_threshold = 30  # If any stat drops below this, crisis occurs
@@ -190,18 +192,12 @@ class MaylopolisGameEngine:
             }
             # Additional departments may be added to this mapping as needed
         }
-        # In-engine logging pub/sub: subscribers receive asyncio.Queue instances
-        self._log_subscribers: List[asyncio.Queue] = []
-        # Keep a bounded history of emitted logs for new subscribers
-        self._log_history: List[str] = []
-        self.log_subscribers = []
-        self.log_buffer = []  # <-- Add this line
-        self.log_buffer_size = 100  # or whatever makes sense
+    # Logging is now handled by AsyncLogger
         
     async def start_new_game(self) -> Dict[str, Any]:
         """Initialize a new game"""
-        self._emit_log("🏛️  Starting new Mailopolis game...")
-        self._emit_log(f"Initial city stats: {self.city_stats.to_dict()}")
+        self.logger.log("🏛️  Starting new Mailopolis game...")
+        self.logger.log(f"Initial city stats: {self.city_stats.to_dict()}")
         
         self.turn_number = 0
         self.active_events = []
@@ -231,9 +227,9 @@ class MaylopolisGameEngine:
 
         # Begin processing a single proposal as one turn
         self.turn_number += 1
-        self._emit_log(f"\n🗓️  TURN {self.turn_number}")
-        self._emit_log("=" * 50)
-        self._emit_log(f"Processing proposal: {proposal.title}")
+        self.logger.log(f"\n🗓️  TURN {self.turn_number}")
+        self.logger.log("=" * 50)
+        self.logger.log(f"Processing proposal: {proposal.title}")
 
         # Phase 1: Handle ongoing events and generate new ones
         await self._process_events()
@@ -303,7 +299,7 @@ class MaylopolisGameEngine:
             event.duration -= 1
             if event.duration <= 0:
                 events_to_remove.append(event)
-                self._emit_log(f"⏰ Event concluded: {event.title}")
+                self.logger.log(f"⏰ Event concluded: {event.title}")
         
         # Remove expired events
         for event in events_to_remove:
@@ -314,58 +310,22 @@ class MaylopolisGameEngine:
             new_event = await self._generate_random_event()
             if new_event:
                 self.active_events.append(new_event)
-                self._emit_log(f"🚨 New event: {new_event.title}")
+                self.logger.log(f"🚨 New event: {new_event.title}")
         
         # Check for crisis events based on low stats
         crisis_event = await self._check_for_crisis()
         if crisis_event:
             self.active_events.append(crisis_event)
-            self._emit_log(f"💥 CRISIS: {crisis_event.title}")
+            self.logger.log(f"💥 CRISIS: {crisis_event.title}")
 
-    def _emit_log(self, message: str) -> None:
-        """Emit a log message to all subscribers and record it in history.
-
-        Non-blocking: uses put_nowait and falls back to scheduling a put.
-        """
-        from datetime import datetime as _dt
-        ts = _dt.utcnow().isoformat()
-        full = f"[{ts}] {message}"
-
-        # keep bounded history
-        try:
-            self._log_history.append(full)
-            if len(self._log_history) > 500:
-                self._log_history.pop(0)
-        except Exception:
-            pass
-
-        # dispatch to subscribers
-        for q in list(self._log_subscribers):
-            try:
-                q.put_nowait(full)
-            except Exception:
-                try:
-                    asyncio.create_task(q.put(full))
-                except Exception:
-                    continue
+    # Logging is now handled by AsyncLogger
 
     async def subscribe_logs(self) -> asyncio.Queue:
         """Return an asyncio.Queue for consuming logs. Caller must unsubscribe."""
-        q: asyncio.Queue = asyncio.Queue()
-        self._log_subscribers.append(q)
-        # Push history to new subscriber
-        for item in self._log_history:
-            try:
-                q.put_nowait(item)
-            except Exception:
-                await q.put(item)
-        return q
+        return await self.logger.subscribe()
 
     async def unsubscribe_logs(self, q: asyncio.Queue) -> None:
-        try:
-            self._log_subscribers.remove(q)
-        except ValueError:
-            pass
+        await self.logger.unsubscribe(q)
     
     async def get_suggested_proposals(self) -> List[PolicyProposal]:
         """Generate suggested proposals for the player based on current game state"""
