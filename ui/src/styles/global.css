@@ -37,17 +37,11 @@ body {
 		var(--color-background);
 	display: flex;
 	justify-content: center;
-	align-items: stretch;
-	padding: clamp(16px, 2vw, 24px);
+	align-items: center;
+	overflow: hidden;
 }
 
 #root {
 	flex: 1;
 	display: flex;
-}
-
-@media (max-width: 1024px) {
-	body {
-		padding: clamp(12px, 1.5vw, 16px);
-	}
 }
