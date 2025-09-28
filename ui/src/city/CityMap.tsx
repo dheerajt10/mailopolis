@@ -300,8 +300,6 @@ export const CityMap: React.FC = () => {
 
 	return (
 		<div className="city-map">
-			<div className="city-title">MAILOPOLIS CITY MAP</div>
-
 			{/* Roads */}
 			<div className="road road-horizontal road-main-h" />
 			<div className="road road-horizontal road-secondary-h1" />
