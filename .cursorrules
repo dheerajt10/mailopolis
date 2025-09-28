@@ -1,0 +1,4 @@
+Refer to the specs.md file for the game rules and instructions.
+
+In the solana folder, we have to create the solana ledger and use the 
+solana agent kit to expose the ledger to the agents.
