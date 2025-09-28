@@ -65,7 +65,11 @@ class Turn:
 class MaylopolisGameEngine:
     """Main game engine that runs the city simulation"""
     
-    def __init__(self, agent_manager: LangChainAgentManager):
+    def __init__(self, agent_manager: LangChainAgentManager = None):
+        # If agent_manager is not provided, create one and pass emit_log
+        if agent_manager is None:
+            from agents.langchain_agents import LangChainAgentManager
+            agent_manager = LangChainAgentManager(emit_log=self.emit_log)
         self.agent_manager = agent_manager
         self.city_stats = CityStats()
         self.turn_number = 0
@@ -190,6 +194,9 @@ class MaylopolisGameEngine:
         self._log_subscribers: List[asyncio.Queue] = []
         # Keep a bounded history of emitted logs for new subscribers
         self._log_history: List[str] = []
+        self.log_subscribers = []
+        self.log_buffer = []  # <-- Add this line
+        self.log_buffer_size = 100  # or whatever makes sense
         
     async def start_new_game(self) -> Dict[str, Any]:
         """Initialize a new game"""

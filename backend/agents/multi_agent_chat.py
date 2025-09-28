@@ -34,50 +34,64 @@ class PoliticalDiscussion:
 class MultiAgentChatSystem:
     """Orchestrates independent agent conversations and political maneuvering"""
     
-    def __init__(self, agents: Dict[Department, 'LangChainAgent']):
+    def __init__(self, agents: Dict[Department, 'LangChainAgent'], emit_log=None):
         self.agents = agents
         self.memory = ConversationMemory()
         self.max_conversations = 8  # Maximum private conversations to simulate
+        self.emit_log = emit_log  # Optional async log callback
+
+    async def _log(self, msg: str):
+        print(msg)
+        if self.emit_log:
+            try:
+                await self.emit_log(msg)
+            except Exception:
+                pass
+        def __init__(self, agents: Dict[Department, 'LangChainAgent'], emit_log=None):
+            self.agents = agents
+            self.memory = ConversationMemory()
+            self.max_conversations = 8  # Maximum private conversations to simulate
+            self.emit_log = emit_log  # Optional async log callback
+
+        async def _log(self, msg: str):
+            print(msg)
+            if self.emit_log:
+                try:
+                    await self.emit_log(msg)
+                except Exception:
+                    pass
         
     async def discuss_proposal(self, proposal: PolicyProposal, 
                              game_context: Dict[str, Any]) -> PoliticalDiscussion:
         """Simulate independent political discussions and lobbying"""
-        print(f"🏛️  Starting political maneuvering for: {proposal.title}")
-        
+        await self._log(f"🏛️  Starting political maneuvering for: {proposal.title}")
         # Exclude mayor from initial discussions - they're the decision maker
         discussing_agents = {dept: agent for dept, agent in self.agents.items() 
                            if dept != Department.MAYOR}
-        
         try:
             # Phase 1: Independent private conversations
-            print("🤝 Phase 1: Private conversations and coalition building...")
+            await self._log("🤝 Phase 1: Private conversations and coalition building...")
             private_conversations = await self._simulate_private_conversations(
                 proposal, game_context, discussing_agents
             )
-            
             # Phase 2: Determine coalitions based on conversations
-            print("🤝 Phase 2: Coalition formation...")
+            await self._log("🤝 Phase 2: Coalition formation...")
             coalitions = self._analyze_coalitions(private_conversations)
-            
             # Phase 3: Agents decide whether to lobby the mayor
-            print("👑 Phase 3: Mayor lobbying attempts...")
+            await self._log("👑 Phase 3: Mayor lobbying attempts...")
             mayor_lobbying = await self._simulate_mayor_lobbying(
                 proposal, game_context, discussing_agents, private_conversations
             )
-            
             # Phase 4: Collect final positions
             final_positions = self._determine_final_positions(private_conversations, coalitions)
-            
             # Save the entire political discussion
             all_messages = []
             for conv in private_conversations:
                 all_messages.extend(conv.messages)
             for lobby in mayor_lobbying:
                 all_messages.append(lobby.message)
-            
             proposal_id = proposal.title.replace(" ", "_").replace("/", "-").replace(":", "")
             self.memory.save_conversation(proposal_id, all_messages)
-            
             return PoliticalDiscussion(
                 proposal_id=proposal_id,
                 private_conversations=private_conversations,
@@ -85,9 +99,8 @@ class MultiAgentChatSystem:
                 coalitions_formed=coalitions,
                 final_positions=final_positions
             )
-            
         except Exception as e:
-            print(f"❌ Error during political discussion: {e}")
+            await self._log(f"❌ Error during political discussion: {e}")
             return PoliticalDiscussion(
                 proposal_id=proposal.title,
                 private_conversations=[],
@@ -102,20 +115,15 @@ class MultiAgentChatSystem:
         """Simulate independent private conversations between agents"""
         conversations = []
         agent_list = list(discussing_agents.values())
-        
         # Create conversation pairs based on agent personalities and interests
         conversation_pairs = self._generate_conversation_pairs(agent_list, proposal)
-        
         for i, (agent1, agent2, purpose) in enumerate(conversation_pairs):
             try:
-                print(f"  💬 {agent1.personality.name} speaking privately with {agent2.personality.name} about {purpose}...")
-                
+                await self._log(f"  💬 {agent1.personality.name} speaking privately with {agent2.personality.name} about {purpose}...")
                 # Agent 1 initiates conversation
                 message1 = await self._generate_private_message(agent1, agent2, proposal, game_context, purpose, is_initiator=True)
-                
                 # Agent 2 responds
                 message2 = await self._generate_private_message(agent2, agent1, proposal, game_context, purpose, is_initiator=False, previous_message=message1)
-                
                 conversation = PrivateConversation(
                     participants=[agent1.personality.name, agent2.personality.name],
                     messages=[
@@ -139,10 +147,8 @@ class MultiAgentChatSystem:
                     purpose=purpose
                 )
                 conversations.append(conversation)
-                
             except Exception as e:
-                print(f"❌ Error in private conversation: {e}")
-                
+                await self._log(f"❌ Error in private conversation: {e}")
         return conversations
     
     def _generate_conversation_pairs(self, agents: List['LangChainAgent'], 

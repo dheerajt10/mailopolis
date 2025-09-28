@@ -86,7 +86,7 @@ AgentPersonality.get_system_prompt = get_system_prompt
 class LangChainAgentManager:
     """Manages LangChain-powered agents for the sustainability game"""
     
-    def __init__(self, use_openai: bool = True, temperature: float = 0.7):
+    def __init__(self, use_openai: bool = True, temperature: float = 0.7, emit_log=None):
         self.temperature = temperature
         
         # Initialize LangChain LLM
@@ -146,7 +146,7 @@ class LangChainAgentManager:
         
         # Add multi-agent chat system
         from agents.multi_agent_chat import MultiAgentChatSystem
-        self.chat_system = MultiAgentChatSystem(self.agents)
+        self.chat_system = MultiAgentChatSystem(self.agents, emit_log=emit_log)
     
     async def evaluate_proposal_by_department(self, proposal: PolicyProposal, 
                                             department: Department,

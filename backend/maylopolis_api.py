@@ -111,14 +111,10 @@ async def play_turn(req: SingleProposalRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-__all__ = ["router", "get_engine"]
-
-
-@router.websocket("/ws/{user_id}/{session_id}")
-async def websocket_endpoint(websocket: WebSocket, user_id: str, session_id: str, token: str = Query(...)):
+@router.websocket("/ws/logs")
+async def websocket_endpoint(websocket: WebSocket):
     """Simple websocket endpoint that registers the client to receive game logs.
 
-    Clients must provide a `token` query parameter (unused here but kept for parity).
     """
     # Accept the connection
     await websocket.accept()
@@ -168,3 +164,6 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str, session_id: str
                 await engine.unsubscribe_logs(log_queue)
             except Exception:
                 pass
+
+__all__ = ["router", "get_engine"]
+

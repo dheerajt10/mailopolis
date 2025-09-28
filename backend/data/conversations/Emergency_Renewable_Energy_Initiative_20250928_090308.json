@@ -1,0 +1,136 @@
+{
+  "proposal_id": "Emergency_Renewable_Energy_Initiative",
+  "timestamp": "2025-09-28T09:03:08.592110",
+  "messages": [
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "Let me share Energy's view on this proposal with you.",
+      "timestamp": "2025-09-28T09:03:08.591124",
+      "message_type": "private_information_sharing",
+      "references": [
+        "Maria Santos"
+      ]
+    },
+    {
+      "speaker": "Maria Santos",
+      "department": "Transportation",
+      "content": "Let me share Transportation's view on this proposal with you.",
+      "timestamp": "2025-09-28T09:03:08.591163",
+      "message_type": "private_information_sharing_response",
+      "references": [
+        "Dr. Marcus Chen"
+      ]
+    },
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "Let me share Energy's view on this proposal with you.",
+      "timestamp": "2025-09-28T09:03:08.591234",
+      "message_type": "private_information_sharing",
+      "references": [
+        "James Morrison"
+      ]
+    },
+    {
+      "speaker": "James Morrison",
+      "department": "EconomicDevelopment",
+      "content": "Let me share EconomicDevelopment's view on this proposal with you.",
+      "timestamp": "2025-09-28T09:03:08.591236",
+      "message_type": "private_information_sharing_response",
+      "references": [
+        "Dr. Marcus Chen"
+      ]
+    },
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "Let me share Energy's view on this proposal with you.",
+      "timestamp": "2025-09-28T09:03:08.591283",
+      "message_type": "private_general_discussion",
+      "references": [
+        "Citizens Council Representative"
+      ]
+    },
+    {
+      "speaker": "Citizens Council Representative",
+      "department": "Citizens",
+      "content": "Let me share Citizens's view on this proposal with you.",
+      "timestamp": "2025-09-28T09:03:08.591286",
+      "message_type": "private_general_discussion_response",
+      "references": [
+        "Dr. Marcus Chen"
+      ]
+    },
+    {
+      "speaker": "Dr. Sarah Rodriguez",
+      "department": "Housing",
+      "content": "Let me share Housing's view on this proposal with you.",
+      "timestamp": "2025-09-28T09:03:08.591321",
+      "message_type": "private_information_sharing",
+      "references": [
+        "Elena Vasquez"
+      ]
+    },
+    {
+      "speaker": "Elena Vasquez",
+      "department": "Water",
+      "content": "Let me share Water's view on this proposal with you.",
+      "timestamp": "2025-09-28T09:03:08.591322",
+      "message_type": "private_information_sharing_response",
+      "references": [
+        "Dr. Sarah Rodriguez"
+      ]
+    },
+    {
+      "speaker": "Dr. Sarah Rodriguez",
+      "department": "Housing",
+      "content": "As Dr. Sarah Rodriguez, I believe this proposal needs careful consideration.",
+      "timestamp": "2025-09-28T09:03:08.591540",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    },
+    {
+      "speaker": "Robert Kim",
+      "department": "Waste",
+      "content": "As Robert Kim, I believe this proposal needs careful consideration.",
+      "timestamp": "2025-09-28T09:03:08.591584",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    },
+    {
+      "speaker": "Elena Vasquez",
+      "department": "Water",
+      "content": "As Elena Vasquez, I believe this proposal needs careful consideration.",
+      "timestamp": "2025-09-28T09:03:08.591697",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    },
+    {
+      "speaker": "James Morrison",
+      "department": "EconomicDevelopment",
+      "content": "As James Morrison, I believe this proposal needs careful consideration.",
+      "timestamp": "2025-09-28T09:03:08.591738",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    },
+    {
+      "speaker": "Citizens Council Representative",
+      "department": "Citizens",
+      "content": "As Citizens Council Representative, I believe this proposal needs careful consideration.",
+      "timestamp": "2025-09-28T09:03:08.591795",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    }
+  ]
+}
