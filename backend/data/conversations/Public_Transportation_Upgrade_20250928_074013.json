@@ -1,0 +1,126 @@
+{
+  "proposal_id": "Public_Transportation_Upgrade",
+  "timestamp": "2025-09-28T07:40:13.219605",
+  "messages": [
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "",
+      "timestamp": "2025-09-28T07:39:22.736130",
+      "message_type": "private_information_sharing",
+      "references": [
+        "Maria Santos"
+      ]
+    },
+    {
+      "speaker": "Maria Santos",
+      "department": "Transportation",
+      "content": "Decision: OPPOSE\nReasoning: That's not how we do things here; our current public transportation system has been operating effectively for decades and continues to meet current ridership demands without issue. We've invested heavily in our existing infrastructure, and I see no compelling reason to undertake expensive changes that could destabilize our operations.\nConfidence: 9\nConcerns: None",
+      "timestamp": "2025-09-28T07:39:22.736161",
+      "message_type": "private_information_sharing_response",
+      "references": [
+        "Dr. Marcus Chen"
+      ]
+    },
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "",
+      "timestamp": "2025-09-28T07:39:30.277131",
+      "message_type": "private_general_discussion",
+      "references": [
+        "Dr. Sarah Rodriguez"
+      ]
+    },
+    {
+      "speaker": "Dr. Sarah Rodriguez",
+      "department": "Housing",
+      "content": "",
+      "timestamp": "2025-09-28T07:39:30.277147",
+      "message_type": "private_general_discussion_response",
+      "references": [
+        "Dr. Marcus Chen"
+      ]
+    },
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "",
+      "timestamp": "2025-09-28T07:39:39.094223",
+      "message_type": "private_general_discussion",
+      "references": [
+        "Robert Kim"
+      ]
+    },
+    {
+      "speaker": "Robert Kim",
+      "department": "Waste",
+      "content": "",
+      "timestamp": "2025-09-28T07:39:39.094255",
+      "message_type": "private_general_discussion_response",
+      "references": [
+        "Dr. Marcus Chen"
+      ]
+    },
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "",
+      "timestamp": "2025-09-28T07:39:46.264331",
+      "message_type": "private_information_sharing",
+      "references": [
+        "James Morrison"
+      ]
+    },
+    {
+      "speaker": "James Morrison",
+      "department": "EconomicDevelopment",
+      "content": "Decision: SUPPORT\nReasoning: A robust public transportation network is a critical piece of infrastructure that can unlock significant development opportunities, drive up property values in key corridors, and attract new investment to Mailopolis. We need to ensure any",
+      "timestamp": "2025-09-28T07:39:46.264384",
+      "message_type": "private_information_sharing_response",
+      "references": [
+        "Dr. Marcus Chen"
+      ]
+    },
+    {
+      "speaker": "Dr. Sarah Rodriguez",
+      "department": "Housing",
+      "content": "",
+      "timestamp": "2025-09-28T07:39:49.025898",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    },
+    {
+      "speaker": "Robert Kim",
+      "department": "Waste",
+      "content": "",
+      "timestamp": "2025-09-28T07:40:06.370980",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    },
+    {
+      "speaker": "Elena Vasquez",
+      "department": "Water",
+      "content": "",
+      "timestamp": "2025-09-28T07:40:09.757478",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    },
+    {
+      "speaker": "James Morrison",
+      "department": "EconomicDevelopment",
+      "content": "",
+      "timestamp": "2025-09-28T07:40:13.218723",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    }
+  ]
+}
