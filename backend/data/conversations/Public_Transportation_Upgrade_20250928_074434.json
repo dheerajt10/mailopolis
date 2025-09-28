@@ -1,0 +1,146 @@
+{
+  "proposal_id": "Public_Transportation_Upgrade",
+  "timestamp": "2025-09-28T07:44:34.160541",
+  "messages": [
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "",
+      "timestamp": "2025-09-28T07:43:48.812083",
+      "message_type": "private_information_sharing",
+      "references": [
+        "Maria Santos"
+      ]
+    },
+    {
+      "speaker": "Maria Santos",
+      "department": "Transportation",
+      "content": "Decision: OPPOSE\nReasoning: That's not how we do things here, Dr. Chen. Our current public transportation system works perfectly fine and has been serving Mailopolis reliably for decades. I don't see any compelling reason to disrupt established operations or incur unnecessary costs.\nConfidence: 9\nConcerns: This proposal sounds like it would involve significant, expensive changes to our",
+      "timestamp": "2025-09-28T07:43:48.812110",
+      "message_type": "private_information_sharing_response",
+      "references": [
+        "Dr. Marcus Chen"
+      ]
+    },
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "\"James, regarding this electric bus proposal, my department possesses the unparalleled technical expertise on grid integration and optimal charging infrastructure necessary for such an undertaking. I trust your economic projections adequately factor in the nuanced energy system modeling",
+      "timestamp": "2025-09-28T07:43:55.928372",
+      "message_type": "private_information_sharing",
+      "references": [
+        "James Morrison"
+      ]
+    },
+    {
+      "speaker": "James Morrison",
+      "department": "EconomicDevelopment",
+      "content": "",
+      "timestamp": "2025-09-28T07:43:55.928409",
+      "message_type": "private_information_sharing_response",
+      "references": [
+        "Dr. Marcus Chen"
+      ]
+    },
+    {
+      "speaker": "Maria Santos",
+      "department": "Transportation",
+      "content": "James, I wanted to chat about this 'Public Transportation Upgrade' proposal. Frankly, our current system works fine, and I'm quite concerned about the significant infrastructure overhaul and operational changes an electric fleet and expanded routes would demand. It sounds like a lot of expense and disruption for something that isn't broken.",
+      "timestamp": "2025-09-28T07:44:03.597257",
+      "message_type": "private_general_discussion",
+      "references": [
+        "James Morrison"
+      ]
+    },
+    {
+      "speaker": "James Morrison",
+      "department": "EconomicDevelopment",
+      "content": "",
+      "timestamp": "2025-09-28T07:44:03.597299",
+      "message_type": "private_general_discussion_response",
+      "references": [
+        "Maria Santos"
+      ]
+    },
+    {
+      "speaker": "Dr. Sarah Rodriguez",
+      "department": "Housing",
+      "content": "",
+      "timestamp": "2025-09-28T07:44:11.787666",
+      "message_type": "private_general_discussion",
+      "references": [
+        "Robert Kim"
+      ]
+    },
+    {
+      "speaker": "Robert Kim",
+      "department": "Waste",
+      "content": "",
+      "timestamp": "2025-09-28T07:44:11.787708",
+      "message_type": "private_general_discussion_response",
+      "references": [
+        "Dr. Sarah Rodriguez"
+      ]
+    },
+    {
+      "speaker": "Maria Santos",
+      "department": "Transportation",
+      "content": "",
+      "timestamp": "2025-09-28T07:44:15.423416",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    },
+    {
+      "speaker": "Dr. Sarah Rodriguez",
+      "department": "Housing",
+      "content": "",
+      "timestamp": "2025-09-28T07:44:19.212796",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    },
+    {
+      "speaker": "Robert Kim",
+      "department": "Waste",
+      "content": "",
+      "timestamp": "2025-09-28T07:44:23.867531",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    },
+    {
+      "speaker": "Elena Vasquez",
+      "department": "Water",
+      "content": "",
+      "timestamp": "2025-09-28T07:44:27.330846",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    },
+    {
+      "speaker": "James Morrison",
+      "department": "EconomicDevelopment",
+      "content": "",
+      "timestamp": "2025-09-28T07:44:30.469386",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    },
+    {
+      "speaker": "Citizens Council Representative",
+      "department": "Citizens",
+      "content": "",
+      "timestamp": "2025-09-28T07:44:34.160238",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    }
+  ]
+}

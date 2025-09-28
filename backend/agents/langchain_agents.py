@@ -38,6 +38,7 @@ from datetime import datetime
 
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
 
@@ -89,24 +90,51 @@ class LangChainAgentManager:
         self.temperature = temperature
         
         # Initialize LangChain LLM
+        self.llm = None
+        
+        # Try OpenAI first
         if use_openai and os.getenv("OPENAI_API_KEY"):
-            self.llm = ChatOpenAI(
-                model="gpt-4o-mini",  # More cost-effective
-                temperature=temperature,
-                max_tokens=500
-            )
-            self.provider_name = "OpenAI GPT-4o-mini"
-        elif os.getenv("ANTHROPIC_API_KEY"):
-            self.llm = ChatAnthropic(
-                model="claude-3-haiku-20240307",  # Fast and cost-effective
-                temperature=temperature,
-                max_tokens=500
-            )
-            self.provider_name = "Anthropic Claude-3 Haiku"
-        else:
-            # Fallback to mock responses
-            self.llm = None
-            self.provider_name = "Mock LLM (No API keys)"
+            try:
+                self.llm = ChatOpenAI(
+                    model="gpt-4o-mini",  # More cost-effective
+                    temperature=temperature,
+                    max_tokens=500
+                )
+                self.provider_name = "OpenAI GPT-4o-mini"
+                print("✅ Initialized OpenAI GPT-4o-mini")
+            except Exception as e:
+                print(f"❌ Failed to initialize OpenAI: {e}")
+        
+        # Try Google Gemini if OpenAI failed
+        if not self.llm and os.getenv("GOOGLE_API_KEY"):
+            try:
+                self.llm = ChatGoogleGenerativeAI(
+                    model="gemini-2.5-flash",  # Fast and cost-effective
+                    temperature=temperature,
+                    max_output_tokens=500
+                )
+                self.provider_name = "Google Gemini 1.5 Flash"
+                print("✅ Initialized Google Gemini 1.5 Flash")
+            except Exception as e:
+                print(f"❌ Failed to initialize Gemini: {e}")
+        
+        # Try Anthropic if both OpenAI and Gemini failed
+        if not self.llm and os.getenv("ANTHROPIC_API_KEY"):
+            try:
+                self.llm = ChatAnthropic(
+                    model="claude-3-haiku-20240307",  # Fast and cost-effective
+                    temperature=temperature,
+                    max_tokens=500
+                )
+                self.provider_name = "Anthropic Claude-3 Haiku"
+                print("✅ Initialized Anthropic Claude-3 Haiku")
+            except Exception as e:
+                print(f"❌ Failed to initialize Anthropic: {e}")
+        
+        # Fallback to mock responses if all providers failed
+        if not self.llm:
+            self.provider_name = "Mock LLM (No API keys or initialization failed)"
+            print("⚠️ Using Mock LLM - no working providers")
             
         # Create agents for each department
         from agents.agent_personalities import AgentPersonalities

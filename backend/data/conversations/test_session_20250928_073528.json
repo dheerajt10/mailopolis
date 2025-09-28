@@ -1,0 +1,14 @@
+{
+  "proposal_id": "test_session",
+  "timestamp": "2025-09-28T07:35:28.041548",
+  "messages": [
+    {
+      "speaker": "Energy",
+      "department": "Energy",
+      "content": "We need more funding for renewable energy projects.",
+      "timestamp": "2025-09-28T07:35:28.041504",
+      "message_type": "lobbying",
+      "references": []
+    }
+  ]
+}

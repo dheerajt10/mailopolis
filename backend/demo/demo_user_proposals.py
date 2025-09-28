@@ -6,10 +6,14 @@ Shows the complete workflow from proposal submission to city stat changes.
 
 import asyncio
 import sys
+import os
 from datetime import datetime
 
 # Add the backend directory to Python path
 sys.path.insert(0, '/Users/dheerajthota/Documents/MHacks/mailopolis/backend')
+
+# Load environment variables
+from load_env import load_environment_variables, print_api_status
 
 from models.game_models import PolicyProposal, Department
 from agents.langchain_agents import LangChainAgentManager
@@ -24,6 +28,12 @@ async def demonstrate_game_workflow():
     
     # Initialize the game
     print("🚀 Initializing game components...")
+    
+    # Load environment variables and show API status
+    load_environment_variables()
+    print_api_status()
+    print()
+    
     agent_manager = LangChainAgentManager()
     game_engine = MaylopolisGameEngine(agent_manager=agent_manager)
     

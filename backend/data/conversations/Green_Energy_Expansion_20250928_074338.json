@@ -1,0 +1,126 @@
+{
+  "proposal_id": "Green_Energy_Expansion",
+  "timestamp": "2025-09-28T07:43:38.606650",
+  "messages": [
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "Maria, regarding this 'Green Energy Expansion' proposal, my department has, naturally, already performed the most rigorous multi-criteria optimization analyses. I suppose I'm obligated to inquire if Transportation has any *quantifiable* data regarding, say, potential grid load shifts or infrastructure demands, though I anticipate our existing models are already far more robust.",
+      "timestamp": "2025-09-28T07:43:05.101361",
+      "message_type": "private_information_sharing",
+      "references": [
+        "Maria Santos"
+      ]
+    },
+    {
+      "speaker": "Maria Santos",
+      "department": "Transportation",
+      "content": "",
+      "timestamp": "2025-09-28T07:43:05.101404",
+      "message_type": "private_information_sharing_response",
+      "references": [
+        "Dr. Marcus Chen"
+      ]
+    },
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "\"Elena, regarding this 'Green Energy Expansion'",
+      "timestamp": "2025-09-28T07:43:12.062533",
+      "message_type": "private_general_discussion",
+      "references": [
+        "Elena Vasquez"
+      ]
+    },
+    {
+      "speaker": "Elena Vasquez",
+      "department": "Water",
+      "content": "\"Green Energy Expansion\"? What *exactly* does that entail for our already dwindling",
+      "timestamp": "2025-09-28T07:43:12.062609",
+      "message_type": "private_general_discussion_response",
+      "references": [
+        "Dr. Marcus Chen"
+      ]
+    },
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "\"Morrison, regarding this 'Green Energy Expansion' proposal, my department has",
+      "timestamp": "2025-09-28T07:43:18.909966",
+      "message_type": "private_information_sharing",
+      "references": [
+        "James Morrison"
+      ]
+    },
+    {
+      "speaker": "James Morrison",
+      "department": "EconomicDevelopment",
+      "content": "",
+      "timestamp": "2025-09-28T07:43:18.910044",
+      "message_type": "private_information_sharing_response",
+      "references": [
+        "Dr. Marcus Chen"
+      ]
+    },
+    {
+      "speaker": "Maria Santos",
+      "department": "Transportation",
+      "content": "",
+      "timestamp": "2025-09-28T07:43:24.958839",
+      "message_type": "private_general_discussion",
+      "references": [
+        "James Morrison"
+      ]
+    },
+    {
+      "speaker": "James Morrison",
+      "department": "EconomicDevelopment",
+      "content": "Decision: NEUTRAL\nReasoning: Good to connect, Maria. My department is always looking for synergistic opportunities to drive robust economic growth and streamline the regulatory environment for our key stakeholders. Let's talk about how we can really unlock Mailopolis's full potential.\nConfidence: 9\nConcerns: None",
+      "timestamp": "2025-09-28T07:43:24.958924",
+      "message_type": "private_general_discussion_response",
+      "references": [
+        "Maria Santos"
+      ]
+    },
+    {
+      "speaker": "Maria Santos",
+      "department": "Transportation",
+      "content": "",
+      "timestamp": "2025-09-28T07:43:28.782677",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    },
+    {
+      "speaker": "Dr. Sarah Rodriguez",
+      "department": "Housing",
+      "content": "",
+      "timestamp": "2025-09-28T07:43:32.154931",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    },
+    {
+      "speaker": "James Morrison",
+      "department": "EconomicDevelopment",
+      "content": "",
+      "timestamp": "2025-09-28T07:43:35.437694",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    },
+    {
+      "speaker": "Citizens Council Representative",
+      "department": "Citizens",
+      "content": "",
+      "timestamp": "2025-09-28T07:43:38.606427",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    }
+  ]
+}

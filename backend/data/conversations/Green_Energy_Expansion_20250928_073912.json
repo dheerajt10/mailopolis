@@ -1,0 +1,136 @@
+{
+  "proposal_id": "Green_Energy_Expansion",
+  "timestamp": "2025-09-28T07:39:12.733466",
+  "messages": [
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "Maria, regarding this 'Green Energy Expansion",
+      "timestamp": "2025-09-28T07:38:05.908734",
+      "message_type": "private_information_sharing",
+      "references": [
+        "Maria Santos"
+      ]
+    },
+    {
+      "speaker": "Maria Santos",
+      "department": "Transportation",
+      "content": "",
+      "timestamp": "2025-09-28T07:38:05.908758",
+      "message_type": "private_information_sharing_response",
+      "references": [
+        "Dr. Marcus Chen"
+      ]
+    },
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "\"Robert, I trust you've reviewed the 'Green Energy Expansion' proposal. While conceptually straightforward to the uninitiated, the actual implementation\u2014considering grid stability, intermittency mitigation, and advanced material science for storage\u2014presents a far more intricate challenge than most understand. I'm curious, from your department's rather *tangential* perspective, what aspects do you imagine might be particularly challenging?\"",
+      "timestamp": "2025-09-28T07:38:12.267114",
+      "message_type": "private_general_discussion",
+      "references": [
+        "Robert Kim"
+      ]
+    },
+    {
+      "speaker": "Robert Kim",
+      "department": "Waste",
+      "content": "",
+      "timestamp": "2025-09-28T07:38:12.267139",
+      "message_type": "private_general_discussion_response",
+      "references": [
+        "Dr. Marcus Chen"
+      ]
+    },
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "",
+      "timestamp": "2025-09-28T07:38:19.951192",
+      "message_type": "private_information_sharing",
+      "references": [
+        "James Morrison"
+      ]
+    },
+    {
+      "speaker": "James Morrison",
+      "department": "EconomicDevelopment",
+      "content": "",
+      "timestamp": "2025-09-28T07:38:19.951218",
+      "message_type": "private_information_sharing_response",
+      "references": [
+        "Dr. Marcus Chen"
+      ]
+    },
+    {
+      "speaker": "Maria Santos",
+      "department": "Transportation",
+      "content": "",
+      "timestamp": "2025-09-28T07:38:26.589521",
+      "message_type": "private_general_discussion",
+      "references": [
+        "Dr. Sarah Rodriguez"
+      ]
+    },
+    {
+      "speaker": "Dr. Sarah Rodriguez",
+      "department": "Housing",
+      "content": "",
+      "timestamp": "2025-09-28T07:38:26.589571",
+      "message_type": "private_general_discussion_response",
+      "references": [
+        "Maria Santos"
+      ]
+    },
+    {
+      "speaker": "Dr. Marcus Chen",
+      "department": "Energy",
+      "content": "",
+      "timestamp": "2025-09-28T07:38:29.509517",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    },
+    {
+      "speaker": "Dr. Sarah Rodriguez",
+      "department": "Housing",
+      "content": "",
+      "timestamp": "2025-09-28T07:38:32.719246",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    },
+    {
+      "speaker": "Robert Kim",
+      "department": "Waste",
+      "content": "",
+      "timestamp": "2025-09-28T07:38:35.606178",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    },
+    {
+      "speaker": "James Morrison",
+      "department": "EconomicDevelopment",
+      "content": "",
+      "timestamp": "2025-09-28T07:39:09.164483",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    },
+    {
+      "speaker": "Citizens Council Representative",
+      "department": "Citizens",
+      "content": "",
+      "timestamp": "2025-09-28T07:39:12.733316",
+      "message_type": "mayor_lobbying",
+      "references": [
+        "Mayor"
+      ]
+    }
+  ]
+}
