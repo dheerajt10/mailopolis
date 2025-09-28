@@ -15,6 +15,7 @@ from fastapi import APIRouter, HTTPException, WebSocket, Query
 from pydantic import BaseModel
 
 from agents.langchain_agents import LangChainAgentManager
+from agents.agent_personalities import AgentPersonalities
 from game.langchain_game_engine import MaylopolisGameEngine
 from models.game_models import PolicyProposal, Department
 from service.agent_mail import agent_mail_service
@@ -332,6 +333,93 @@ async def initialize_agent_inboxes():
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to initialize agent inboxes: {str(e)}")
+
+
+@router.get("/personalities")
+async def get_all_personalities():
+    """Get all agent personalities with their traits and characteristics"""
+    try:
+        personalities = AgentPersonalities.get_all_personalities()
+        
+        # Convert to API-friendly format
+        personality_data = {}
+        for department, personality in personalities.items():
+            personality_data[department.value] = {
+                "name": personality.name,
+                "role": personality.role,
+                "department": personality.department.value,
+                "core_values": personality.core_values,
+                "communication_style": personality.communication_style,
+                "decision_factors": personality.decision_factors,
+                "traits": {
+                    "corruption_resistance": personality.corruption_resistance,
+                    "sustainability_focus": personality.sustainability_focus,
+                    "political_awareness": personality.political_awareness,
+                    "risk_tolerance": personality.risk_tolerance
+                }
+            }
+        
+        return {
+            "ok": True,
+            "count": len(personality_data),
+            "personalities": personality_data
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get agent personalities: {str(e)}")
+
+
+@router.get("/personalities/{department}")
+async def get_personality_by_department(department: str):
+    """Get personality for a specific department"""
+    try:
+        personalities = AgentPersonalities.get_all_personalities()
+        
+        # Find the department (case insensitive)
+        target_dept = None
+        for dept in Department:
+            if dept.value.lower() == department.lower():
+                target_dept = dept
+                break
+        
+        if not target_dept:
+            available_depts = [dept.value for dept in Department]
+            raise HTTPException(
+                status_code=404, 
+                detail=f"Department '{department}' not found. Available departments: {available_depts}"
+            )
+        
+        if target_dept not in personalities:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"No personality found for department '{department}'"
+            )
+        
+        personality = personalities[target_dept]
+        
+        return {
+            "ok": True,
+            "department": target_dept.value,
+            "personality": {
+                "name": personality.name,
+                "role": personality.role,
+                "department": personality.department.value,
+                "core_values": personality.core_values,
+                "communication_style": personality.communication_style,
+                "decision_factors": personality.decision_factors,
+                "traits": {
+                    "corruption_resistance": personality.corruption_resistance,
+                    "sustainability_focus": personality.sustainability_focus,
+                    "political_awareness": personality.political_awareness,
+                    "risk_tolerance": personality.risk_tolerance
+                }
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get personality for department: {str(e)}")
 
 
 @router.websocket("/ws/logs")
