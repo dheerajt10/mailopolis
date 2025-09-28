@@ -16,6 +16,25 @@ app = FastAPI(
     version="2.0.0"
 )
 
+# Initialize agent email system on startup
+@app.on_event("startup")
+async def startup_event():
+    """Initialize the agent email system"""
+    try:
+        from service.agent_mail import initialize_agent_inboxes
+        from load_env import load_environment_variables
+        
+        # Load environment variables
+        load_environment_variables()
+        
+        # Initialize agent inboxes
+        inboxes = await initialize_agent_inboxes()
+        print(f"📧 Initialized {len(inboxes)} agent email inboxes")
+        
+    except Exception as e:
+        print(f"⚠️ Warning: Could not initialize agent emails: {e}")
+        print("Email notifications will be disabled")
+
 # Enable CORS for frontend - Allow everything
 app.add_middleware(
     CORSMiddleware,
@@ -31,12 +50,14 @@ async def root():
     return {"message": "Welcome to Mailopolis! 🏙️"}
 
 
-@app.get("/api/agents/personalities", response_model=List[AgentPersonality])
-async def get_all_agent_personalities():
-    """Retrieve all agent personalities."""
-    personalities = AgentPersonalities.get_all_personalities()
-    return list(personalities.values())
-
+# Include the Maylopolis router (if available) under /maylopolis
+try:
+    from maylopolis_api import router as maylopolis_router
+    app.include_router(maylopolis_router)
+except Exception:
+    # If the module isn't importable (e.g., missing deps during static analysis),
+    # we silently skip including the router so the main app still runs.
+    pass
 
 
 if __name__ == "__main__":

@@ -1,37 +1,6 @@
-"""
-LangChain-powered agent personalities for Mailopolis sustai        # Initialize LangChain LLM
-        self.llm = None
-        if use_openai and os.getenv("OPENAI_API_KEY"):
-            try:
-                self.llm = ChatOpenAI(
-                    model="gpt-4o-mini",  # More cost-effective
-                    temperature=temperature,
-                    max_tokens=500
-                )
-                self.provider_name = "OpenAI GPT-4o-mini"
-                print("✅ Initialized OpenAI GPT-4o-mini")
-            except Exception as e:
-                print(f"❌ Failed to initialize OpenAI: {e}")
-        
-        if not self.llm and os.getenv("ANTHROPIC_API_KEY"):
-            try:
-                self.llm = ChatAnthropic(
-                    model="claude-3-haiku-20240307",  # Fast and cost-effective
-                    temperature=temperature,
-                    max_tokens=500
-                )
-                self.provider_name = "Anthropic Claude-3 Haiku"
-                print("✅ Initialized Anthropic Claude")
-            except Exception as e:
-                print(f"❌ Failed to initialize Anthropic: {e}")
-        
-        if not self.llm:
-            # Fallback to mock provider for testing
-            self.provider_name = "Mock LLM (No API keys or initialization failed)"
-            print("⚠️ Using Mock LLM - no working providers") cleaner and more robust than custom LLM integration.
-"""
 
 import os
+import asyncio
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 from datetime import datetime
@@ -45,6 +14,12 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
 
 from models.game_models import PolicyProposal, SustainabilityGameState, Department
+from service.agent_mail import (
+    agent_mail_service,
+    send_proposal_notification,
+    send_vote_notification,
+    send_mayor_decision_notification
+)
 
 @dataclass
 class ProposalEvaluation:
@@ -150,6 +125,19 @@ class LangChainAgentManager:
         # Add multi-agent chat system
         from agents.multi_agent_chat import MultiAgentChatSystem
         self.chat_system = MultiAgentChatSystem(self.agents, logger=self.logger)
+        
+        # Initialize agent inboxes for email communication
+        self._initialize_agent_emails()
+    
+    def _initialize_agent_emails(self):
+        """Initialize agent email inboxes in background"""
+        try:
+            # Run inbox initialization in background
+            asyncio.create_task(agent_mail_service.initialize_all_agent_inboxes())
+            self.logger.log("📧 Agent email initialization started")
+        except Exception as e:
+            self.logger.log(f"⚠️ Could not initialize agent emails: {e}")
+
     
     async def evaluate_proposal_by_department(self, proposal: PolicyProposal, 
                                             department: Department,
@@ -217,10 +205,21 @@ class LangChainAgentManager:
         
         self.logger.log(f"🏛️  Starting political maneuvering for: {proposal.title}")
         
+        # Send email notification about new proposal to all agents
+        try:
+            await send_proposal_notification(
+                proposal.title,
+                proposal.proposed_by,
+                proposal.description
+            )
+        except Exception as e:
+            self.logger.log(f"⚠️ Could not send proposal email: {e}")
+
+        
         # Run the independent political discussion
         political_discussion = await self.chat_system.discuss_proposal(proposal, game_context)
         
-        # Extract department positions from final positions
+        # Extract department positions from final positions and send email notifications
         department_positions = {}
         for agent_name, position in political_discussion.final_positions.items():
             # Find which department this agent belongs to
@@ -233,12 +232,36 @@ class LangChainAgentManager:
                         'agent_name': agent_name,
                         'coalitions': [c for c in political_discussion.coalitions_formed if agent_name in c]
                     }
+                    
+                    # Send email notification about the voting decision
+                    try:
+                        coalition_info = f"Agent participated in {len([c for c in political_discussion.coalitions_formed if agent_name in c])} coalition(s)."
+                        reasoning = f"Based on department expertise and political discussions. {coalition_info}"
+                        await send_vote_notification(
+                            proposal.title,
+                            agent_name,
+                            position,
+                            reasoning
+                        )
+                    except Exception as e:
+                        self.logger.log(f"⚠️ Could not send vote email for {agent_name}: {e}")
         
         # Mayor makes final decision based on lobbying and political landscape
         self.logger.log("👑 Mayor making final decision based on political discussions and lobbying...")
         mayor_evaluation = await self._mayor_decide_after_politics(
             proposal, game_context, political_discussion
         )
+        
+        # Send email notification about mayor's final decision
+        try:
+            decision_text = "APPROVED" if mayor_evaluation.accept else "REJECTED"
+            await send_mayor_decision_notification(
+                proposal.title,
+                decision_text,
+                mayor_evaluation.reasoning
+            )
+        except Exception as e:
+            self.logger.log(f"⚠️ Could not send mayor decision email: {e}")
         
         return {
             'political_discussion': political_discussion,

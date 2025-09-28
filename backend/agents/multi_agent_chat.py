@@ -7,6 +7,8 @@ from datetime import datetime
 from agents.conversation_memory import ConversationMemory, ConversationMessage
 from models.game_models import PolicyProposal, Department
 from service.async_logger import AsyncLogger
+from service.agent_mail import agent_mail_service
+
 
 if TYPE_CHECKING:
     from agents.langchain_agents import LangChainAgent
@@ -134,6 +136,123 @@ class MultiAgentChatSystem:
                 self._log(f"❌ Error in private conversation: {e}")
         return conversations
     
+    async def _send_private_conversation_email(self, sender_agent, recipient_agent, message_content, proposal_title, purpose):
+        """Send email notification for private conversations between agents"""
+        try:
+            sender_inbox = agent_mail_service.get_agent_inbox(sender_agent.personality.name)
+            recipient_inbox = agent_mail_service.get_agent_inbox(recipient_agent.personality.name)
+            
+            if not sender_inbox or not recipient_inbox:
+                return  # Skip if inboxes not ready
+            
+            from service.agent_mail import ActionNotification
+            
+            purpose_readable = purpose.replace('_', ' ').title()
+            
+            action = ActionNotification(
+                action_type="private_conversation",
+                action_maker=sender_agent.personality.name,
+                action_maker_inbox=sender_inbox.inbox_id,
+                recipients=[recipient_inbox.inbox_id],
+                subject=f"🤝 Private Discussion: {purpose_readable} - {proposal_title}",
+                message_text=f"""
+Private Communication from {sender_agent.personality.name}
+
+Regarding: {proposal_title}
+Purpose: {purpose_readable}
+
+Message:
+{message_content}
+
+---
+This is a private communication between department heads regarding the current proposal under consideration.
+                """.strip(),
+                message_html=self._create_private_conversation_html(sender_agent.personality.name, recipient_agent.personality.name, message_content, proposal_title, purpose_readable)
+            )
+            
+            await agent_mail_service.send_action_notification(action)
+            
+        except Exception as e:
+            self._log(f"⚠️ Could not send private conversation email: {e}")
+    
+    def _create_private_conversation_html(self, sender_name, recipient_name, message_content, proposal_title, purpose):
+        """Create HTML email for private conversations"""
+        return f"""
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }}
+        .email-header {{
+            background-color: #6b46c1;
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }}
+        .email-content {{
+            background-color: #ffffff;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 0 0 8px 8px;
+        }}
+        .sender {{
+            font-weight: bold;
+            color: #6b46c1;
+        }}
+        .purpose {{
+            background-color: #f3f4f6;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-style: italic;
+        }}
+        .message-content {{
+            background-color: #faf9f7;
+            padding: 15px;
+            border-left: 4px solid #6b46c1;
+            margin: 15px 0;
+        }}
+        .footer {{
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #6b7280;
+            font-style: italic;
+        }}
+    </style>
+</head>
+<body>
+    <div class="email-header">
+        <h1>🤝 Private Discussion</h1>
+    </div>
+    <div class="email-content">
+        <p><strong>From:</strong> <span class="sender">{sender_name}</span></p>
+        <p><strong>To:</strong> {recipient_name}</p>
+        <p><strong>Regarding:</strong> {proposal_title}</p>
+        
+        <div class="purpose">
+            <strong>Purpose:</strong> {purpose}
+        </div>
+        
+        <div class="message-content">
+            {message_content.replace(chr(10), '<br>')}
+        </div>
+    </div>
+    <div class="footer">
+        Private communication between Mailopolis department heads
+    </div>
+</body>
+</html>
+        """.strip()
+    
     def _generate_conversation_pairs(self, agents: List['LangChainAgent'], 
                                    proposal: PolicyProposal) -> List[Tuple['LangChainAgent', 'LangChainAgent', str]]:
         """Generate pairs of agents likely to have private conversations"""
@@ -168,6 +287,129 @@ class MultiAgentChatSystem:
         }
         return (dept1, dept2) in related_pairs or (dept2, dept1) in related_pairs
     
+    async def _send_lobbying_email(self, agent, lobby_message, proposal_title, influence_type):
+        """Send email notification for mayor lobbying attempts"""
+        try:
+            agent_inbox = agent_mail_service.get_agent_inbox(agent.personality.name)
+            mayor_inbox = agent_mail_service.get_agent_inbox("Mayor Patricia Williams")
+            
+            if not agent_inbox or not mayor_inbox:
+                return  # Skip if inboxes not ready
+            
+            from service.agent_mail import ActionNotification
+            
+            influence_emoji = "💪" if influence_type == "support" else "🚫" if influence_type == "oppose" else "🔄"
+            
+            action = ActionNotification(
+                action_type="mayor_lobbying",
+                action_maker=agent.personality.name,
+                action_maker_inbox=agent_inbox.inbox_id,
+                recipients=[mayor_inbox.inbox_id],
+                subject=f"{influence_emoji} Lobbying Request: {influence_type.title()} - {proposal_title}",
+                message_text=f"""
+Private Lobbying Communication to Mayor Patricia Williams
+
+From: {agent.personality.name}
+Regarding: {proposal_title}
+Position: {influence_type.upper()}
+
+Message:
+{lobby_message}
+
+---
+This is a private lobbying communication to influence the mayor's decision on the current proposal.
+                """.strip(),
+                message_html=self._create_lobbying_html(agent.personality.name, lobby_message, proposal_title, influence_type)
+            )
+            
+            await agent_mail_service.send_action_notification(action)
+            
+        except Exception as e:
+            self._log(f"⚠️ Could not send lobbying email: {e}")
+    
+    def _create_lobbying_html(self, agent_name, lobby_message, proposal_title, influence_type):
+        """Create HTML email for lobbying attempts"""
+        influence_color = "#059669" if influence_type == "support" else "#dc2626" if influence_type == "oppose" else "#f59e0b"
+        influence_emoji = "💪" if influence_type == "support" else "🚫" if influence_type == "oppose" else "🔄"
+        
+        return f"""
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }}
+        .email-header {{
+            background-color: {influence_color};
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }}
+        .email-content {{
+            background-color: #ffffff;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 0 0 8px 8px;
+        }}
+        .position {{
+            font-size: 18px;
+            font-weight: bold;
+            color: {influence_color};
+            text-align: center;
+            margin: 15px 0;
+            padding: 10px;
+            border: 2px solid {influence_color};
+            border-radius: 6px;
+        }}
+        .lobby-message {{
+            background-color: #fef7ff;
+            padding: 15px;
+            border-left: 4px solid {influence_color};
+            margin: 15px 0;
+        }}
+        .footer {{
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #6b7280;
+            font-style: italic;
+        }}
+    </style>
+</head>
+<body>
+    <div class="email-header">
+        <h1>{influence_emoji} Lobbying Communication</h1>
+    </div>
+    <div class="email-content">
+        <p><strong>From:</strong> {agent_name}</p>
+        <p><strong>To:</strong> Mayor Patricia Williams</p>
+        <p><strong>Regarding:</strong> {proposal_title}</p>
+        
+        <div class="position">
+            Position: {influence_type.upper()}
+        </div>
+        
+        <div class="lobby-message">
+            <strong>Lobbying Message:</strong><br>
+            {lobby_message.replace(chr(10), '<br>')}
+        </div>
+        
+        <p><em>This is a private communication intended to influence the mayor's decision on the current proposal under consideration.</em></p>
+    </div>
+    <div class="footer">
+        Private Lobbying Communication - Mailopolis City Hall
+    </div>
+</body>
+</html>
+        """.strip()
+    
     async def _simulate_mayor_lobbying(self, proposal: PolicyProposal,
                                       game_context: Dict[str, Any],
                                       discussing_agents: Dict[Department, 'LangChainAgent'],
@@ -201,6 +443,9 @@ class MultiAgentChatSystem:
                         ),
                         influence_attempt=influence_type
                     ))
+                    
+                    # Send lobbying email to mayor
+                    await self._send_lobbying_email(agent, lobby_message, proposal.title, influence_type)
                     
                 except Exception as e:
                     self._log(f"❌ Error in mayor lobbying from {agent.personality.name}: {e}")

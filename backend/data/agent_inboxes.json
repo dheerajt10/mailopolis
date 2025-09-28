@@ -1,0 +1,61 @@
+{
+  "inboxes": [
+    {
+      "inbox_id": "james-morrison-mailopolis@agentmail.to",
+      "agent_name": "James Morrison",
+      "department": "EconomicDevelopment",
+      "display_name": "James Morrison - Mailopolis EconomicDevelopment",
+      "created_at": "2025-09-28T13:45:41.909000+00:00"
+    },
+    {
+      "inbox_id": "dr-marcus-chen-mailopolis@agentmail.to",
+      "agent_name": "Dr. Marcus Chen",
+      "department": "Energy",
+      "display_name": "Dr. Marcus Chen - Mailopolis Energy",
+      "created_at": "2025-09-28T13:45:42.013000+00:00"
+    },
+    {
+      "inbox_id": "dr-sarah-rodriguez-mailopolis@agentmail.to",
+      "agent_name": "Dr. Sarah Rodriguez",
+      "department": "Housing",
+      "display_name": "Dr. Sarah Rodriguez - Mailopolis Housing",
+      "created_at": "2025-09-28T13:45:42.053000+00:00"
+    },
+    {
+      "inbox_id": "mayor-patricia-williams-mailopolis@agentmail.to",
+      "agent_name": "Mayor Patricia Williams",
+      "department": "Mayor",
+      "display_name": "Mayor Patricia Williams - Mailopolis Mayor",
+      "created_at": "2025-09-28T13:45:42.093000+00:00"
+    },
+    {
+      "inbox_id": "elena-vasquez-mailopolis@agentmail.to",
+      "agent_name": "Elena Vasquez",
+      "department": "Water",
+      "display_name": "Elena Vasquez - Mailopolis Water",
+      "created_at": "2025-09-28T13:45:43.014000+00:00"
+    },
+    {
+      "inbox_id": "citizens-council-representative-mailopolis@agentmail.to",
+      "agent_name": "Citizens Council Representative",
+      "department": "Citizens",
+      "display_name": "Citizens Council Representative - Mailopolis Citizens",
+      "created_at": "2025-09-28T13:45:43.152000+00:00"
+    },
+    {
+      "inbox_id": "maria-santos-mailopolis@agentmail.to",
+      "agent_name": "Maria Santos",
+      "department": "Transportation",
+      "display_name": "Maria Santos - Mailopolis Transportation",
+      "created_at": "2025-09-28T13:45:43.218000+00:00"
+    },
+    {
+      "inbox_id": "robert-kim-mailopolis@agentmail.to",
+      "agent_name": "Robert Kim",
+      "department": "Waste",
+      "display_name": "Robert Kim - Mailopolis Waste",
+      "created_at": "2025-09-28T13:45:42.808000+00:00"
+    }
+  ],
+  "last_updated": "2025-09-28T09:45:43.570141"
+}
