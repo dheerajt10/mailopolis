@@ -57,7 +57,7 @@ def get_api_key(provider: str) -> Optional[str]:
     Get API key for a specific provider.
     
     Args:
-        provider: Either 'openai', 'anthropic', or 'google'
+        provider: Either 'openai', 'anthropic', 'google', or 'agentmail'
         
     Returns:
         API key if found, None otherwise
@@ -68,6 +68,8 @@ def get_api_key(provider: str) -> Optional[str]:
         return os.getenv('ANTHROPIC_API_KEY')
     elif provider.lower() == 'google':
         return os.getenv('GOOGLE_API_KEY')
+    elif provider.lower() == 'agentmail':
+        return os.getenv('AGENTMAIL_API_KEY')
     else:
         raise ValueError(f"Unknown provider: {provider}")
 
@@ -83,6 +85,7 @@ def check_api_configuration() -> dict:
         'openai': bool(get_api_key('openai')),
         'anthropic': bool(get_api_key('anthropic')),
         'google': bool(get_api_key('google')),
+        'agentmail': bool(get_api_key('agentmail')),
         'any_available': False
     }
     
@@ -99,12 +102,17 @@ def print_api_status():
     print(f"   OpenAI: {'✅ Configured' if config['openai'] else '❌ Not configured'}")
     print(f"   Google Gemini: {'✅ Configured' if config['google'] else '❌ Not configured'}")
     print(f"   Anthropic: {'✅ Configured' if config['anthropic'] else '❌ Not configured'}")
+    print(f"   AgentMail: {'✅ Configured' if config['agentmail'] else '❌ Not configured'}")
     
     if not config['any_available']:
-        print("⚠️  No API keys configured - will use mock responses")
+        print("⚠️  No LLM API keys configured - will use mock responses")
         print("💡 Set OPENAI_API_KEY, GOOGLE_API_KEY, or ANTHROPIC_API_KEY environment variables")
     else:
         print("🚀 Ready for LLM-powered agent interactions!")
+    
+    if not config['agentmail']:
+        print("⚠️  AgentMail not configured - email notifications will be disabled")
+        print("💡 Set AGENTMAIL_API_KEY environment variable to enable email notifications")
 
 
 def create_sample_env_file():
@@ -123,6 +131,9 @@ GOOGLE_API_KEY=your_google_api_key_here
 
 # Anthropic API Key (for Claude models) 
 ANTHROPIC_API_KEY=your_anthropic_api_key_here
+
+# AgentMail API Key (for email notifications)
+AGENTMAIL_API_KEY=your_agentmail_api_key_here
 
 # Optional: Set preferred provider (openai, google, or anthropic)
 PREFERRED_LLM_PROVIDER=openai

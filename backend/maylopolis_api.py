@@ -17,6 +17,7 @@ from pydantic import BaseModel
 from agents.langchain_agents import LangChainAgentManager
 from game.langchain_game_engine import MaylopolisGameEngine
 from models.game_models import PolicyProposal, Department
+from service.agent_mail import agent_mail_service
 
 
 class AskProposalRequest(BaseModel):
@@ -109,6 +110,228 @@ async def play_turn(req: SingleProposalRequest):
         return {"ok": True, "result": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/inboxes")
+async def get_agent_inboxes():
+    """Get all agent email inboxes and their details"""
+    try:
+        # Get all created inboxes from the agent mail service
+        inboxes = agent_mail_service.created_inboxes
+        
+        if not inboxes:
+            # If no inboxes exist, try to initialize them
+            await agent_mail_service.initialize_all_agent_inboxes()
+            inboxes = agent_mail_service.created_inboxes
+        
+        # Convert to API-friendly format
+        inbox_data = []
+        for agent_name, inbox in inboxes.items():
+            inbox_data.append({
+                "agent_name": inbox.agent_name,
+                "email_address": inbox.inbox_id,
+                "department": inbox.department.value,
+                "display_name": inbox.display_name,
+                "created_at": inbox.created_at.isoformat(),
+                "username": agent_mail_service._get_agent_email_username(agent_name)
+            })
+        
+        return {
+            "ok": True,
+            "count": len(inbox_data),
+            "inboxes": inbox_data,
+            "api_status": "connected" if agent_mail_service.api_key else "no_api_key"
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get agent inboxes: {str(e)}")
+
+
+@router.get("/inboxes/{agent_name}")
+async def get_agent_inbox(agent_name: str):
+    """Get specific agent's inbox details"""
+    try:
+        # Find the inbox for this agent
+        inbox = agent_mail_service.get_agent_inbox(agent_name)
+        
+        if not inbox:
+            # Try to find by partial name match (case insensitive)
+            for name, inbox_obj in agent_mail_service.created_inboxes.items():
+                if agent_name.lower() in name.lower():
+                    inbox = inbox_obj
+                    break
+        
+        if not inbox:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"No inbox found for agent '{agent_name}'. Available agents: {list(agent_mail_service.created_inboxes.keys())}"
+            )
+        
+        # Try to get recent messages from this inbox using the service method
+        messages = []
+        try:
+            messages = await agent_mail_service.get_inbox_messages(inbox.agent_name, limit=10)
+            # Truncate text content for preview
+            for msg in messages:
+                if msg.get('text_content'):
+                    text = msg['text_content']
+                    if len(text) > 200:
+                        msg['text_content'] = text[:200] + "..."
+        except Exception as e:
+            # If we can't fetch messages, that's okay - just return empty list
+            print(f"Could not fetch messages for {inbox.agent_name}: {e}")
+        
+        return {
+            "ok": True,
+            "agent_name": inbox.agent_name,
+            "email_address": inbox.inbox_id,
+            "department": inbox.department.value,
+            "display_name": inbox.display_name,
+            "created_at": inbox.created_at.isoformat(),
+            "username": agent_mail_service._get_agent_email_username(inbox.agent_name),
+            "recent_messages": messages,
+            "message_count": len(messages)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get agent inbox: {str(e)}")
+
+
+@router.get("/inboxes/{agent_name}/messages")
+async def get_agent_messages(
+    agent_name: str, 
+    limit: int = Query(default=20, description="Number of messages to retrieve"),
+    include_content: bool = Query(default=True, description="Include full message content")
+):
+    """Get messages from a specific agent's inbox"""
+    try:
+        # Find the inbox for this agent
+        inbox = agent_mail_service.get_agent_inbox(agent_name)
+        
+        if not inbox:
+            # Try to find by partial name match (case insensitive)
+            for name, inbox_obj in agent_mail_service.created_inboxes.items():
+                if agent_name.lower() in name.lower():
+                    inbox = inbox_obj
+                    break
+        
+        if not inbox:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"No inbox found for agent '{agent_name}'"
+            )
+        
+        # Fetch messages using the AgentMail service
+        try:
+            messages = await agent_mail_service.get_inbox_messages(inbox.agent_name, limit=limit)
+            
+            # Process messages based on include_content flag
+            if not include_content:
+                for msg in messages:
+                    # Replace full content with preview
+                    text = msg.get('text_content', '')
+                    msg['text_preview'] = text[:200] + "..." if len(text) > 200 else text
+                    # Remove full content fields
+                    msg.pop('text_content', None)
+                    msg.pop('html_content', None)
+                    msg.pop('attachments', None)
+            
+            return {
+                "ok": True,
+                "agent_name": inbox.agent_name,
+                "email_address": inbox.inbox_id,
+                "total_messages": len(messages),
+                "messages": messages,
+                "inbox_info": {
+                    "department": inbox.department.value,
+                    "display_name": inbox.display_name,
+                    "created_at": inbox.created_at.isoformat()
+                }
+            }
+            
+        except Exception as e:
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Failed to fetch messages from AgentMail API: {str(e)}"
+            )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get agent messages: {str(e)}")
+
+
+@router.get("/inboxes/{agent_name}/messages/{message_id}")
+async def get_specific_message(agent_name: str, message_id: str):
+    """Get a specific message from an agent's inbox"""
+    try:
+        # Find the inbox for this agent
+        inbox = agent_mail_service.get_agent_inbox(agent_name)
+        
+        if not inbox:
+            # Try to find by partial name match (case insensitive)
+            for name, inbox_obj in agent_mail_service.created_inboxes.items():
+                if agent_name.lower() in name.lower():
+                    inbox = inbox_obj
+                    break
+        
+        if not inbox:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"No inbox found for agent '{agent_name}'"
+            )
+        
+        # Fetch specific message using the AgentMail service
+        try:
+            message_data = await agent_mail_service.get_specific_message(inbox.agent_name, message_id)
+            
+            if not message_data:
+                raise HTTPException(status_code=404, detail=f"Message {message_id} not found")
+            
+            return {
+                "ok": True,
+                "agent_name": inbox.agent_name,
+                "email_address": inbox.inbox_id,
+                "message": message_data
+            }
+            
+        except Exception as e:
+            raise HTTPException(
+                status_code=404 if "not found" in str(e).lower() else 500,
+                detail=f"Message not found or API error: {str(e)}"
+            )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get message: {str(e)}")
+
+
+@router.post("/inboxes/initialize")
+async def initialize_agent_inboxes():
+    """Initialize or refresh all agent email inboxes"""
+    try:
+        inboxes = await agent_mail_service.initialize_all_agent_inboxes()
+        
+        return {
+            "ok": True,
+            "message": "Agent inboxes initialized successfully",
+            "count": len(inboxes),
+            "inboxes": [
+                {
+                    "agent_name": inbox.agent_name,
+                    "email_address": inbox.inbox_id,
+                    "department": inbox.department.value,
+                    "created_at": inbox.created_at.isoformat()
+                }
+                for inbox in inboxes.values()
+            ]
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to initialize agent inboxes: {str(e)}")
 
 
 @router.websocket("/ws/logs")

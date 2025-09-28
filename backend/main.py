@@ -14,6 +14,25 @@ app = FastAPI(
     version="2.0.0"
 )
 
+# Initialize agent email system on startup
+@app.on_event("startup")
+async def startup_event():
+    """Initialize the agent email system"""
+    try:
+        from service.agent_mail import initialize_agent_inboxes
+        from load_env import load_environment_variables
+        
+        # Load environment variables
+        load_environment_variables()
+        
+        # Initialize agent inboxes
+        inboxes = await initialize_agent_inboxes()
+        print(f"📧 Initialized {len(inboxes)} agent email inboxes")
+        
+    except Exception as e:
+        print(f"⚠️ Warning: Could not initialize agent emails: {e}")
+        print("Email notifications will be disabled")
+
 # Enable CORS for frontend - Allow everything
 app.add_middleware(
     CORSMiddleware,
