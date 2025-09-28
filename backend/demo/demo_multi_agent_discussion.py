@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Demo script for multi-agent discussion system
-Demonstrates how agents discuss proposals with conversation memory
+Demo script for independent agent conversation system
+Demonstrates how agents have private conversations, build coalitions, and lobby the mayor
 """
 
 import asyncio
@@ -18,9 +18,9 @@ from agents.langchain_agents import LangChainAgentManager
 from models.game_models import PolicyProposal, Department, SustainabilityGameState
 
 async def demo_agent_discussion():
-    """Demonstrate multi-agent discussion with conversation memory"""
+    """Demonstrate independent agent conversations, coalition building, and political maneuvering"""
     
-    print("🏛️  Mailopolis Multi-Agent Discussion Demo")
+    print("🏛️  Mailopolis Political Maneuvering Demo")
     print("=" * 50)
     
     # Initialize the agent manager
@@ -65,7 +65,7 @@ async def demo_agent_discussion():
     print()
     
     # Run the multi-agent discussion
-    print("🗣️  STARTING MULTI-AGENT DISCUSSION")
+    print("🏛️  STARTING POLITICAL MANEUVERING")
     print("-" * 40)
     
     try:
@@ -75,31 +75,47 @@ async def demo_agent_discussion():
         )
         
         # Display results
-        print("\n📊 DISCUSSION RESULTS")
-        print("=" * 30)
+        print("\n📊 POLITICAL MANEUVERING RESULTS")
+        print("=" * 40)
         
-        print(f"\n🏛️  Chat Rounds: {len(discussion_result['chat_rounds'])}")
+        print(f"\n🤝 Private Conversations: {len(discussion_result['private_conversations'])}")
         
-        # Show each round's messages
-        for i, round_data in enumerate(discussion_result['chat_rounds']):
-            print(f"\n📢 ROUND {round_data.round_number}: {round_data.messages[0].message_type.upper()}")
-            print("-" * 25)
+        # Show private conversations
+        for i, conv in enumerate(discussion_result['private_conversations']):
+            participants = " & ".join(conv.participants)
+            print(f"\n� CONVERSATION {i+1}: {participants}")
+            print(f"Purpose: {conv.purpose.replace('_', ' ').title()}")
+            print("-" * 30)
             
-            for message in round_data.messages:
-                print(f"🎤 {message.speaker} ({message.department}):")
-                print(f"   {message.content}")
+            for message in conv.messages:
+                print(f"🗣️  {message.speaker}:")
+                print(f"    {message.content}")
+                print()
+        
+        # Show coalitions formed
+        if discussion_result['coalitions_formed']:
+            print("\n🤝 COALITIONS FORMED")
+            print("-" * 20)
+            for i, coalition in enumerate(discussion_result['coalitions_formed']):
+                print(f"Coalition {i+1}: {' & '.join(coalition)}")
+            print()
+        
+        # Show mayor lobbying
+        if discussion_result['mayor_lobbying']:
+            print("\n👑 MAYOR LOBBYING ATTEMPTS")
+            print("-" * 30)
+            for lobby in discussion_result['mayor_lobbying']:
+                print(f"🏛️  {lobby.agent_name} ({lobby.influence_attempt.upper()}):")
+                print(f"    {lobby.message.content}")
                 print()
         
         # Show final department positions
-        print("\n🏛️  FINAL DEPARTMENT POSITIONS")
-        print("-" * 35)
+        print("\n🏛️  FINAL AGENT POSITIONS")
+        print("-" * 30)
         for dept, info in discussion_result['department_positions'].items():
-            print(f"🏢 {dept}:")
-            print(f"   Agent: {info['agent_name']}")
-            print(f"   Position: {info['position']}")
-            print(f"   Reasoning: {info['reasoning']}")
-            if info['conditions'] != "None":
-                print(f"   Conditions: {info['conditions']}")
+            print(f"🏢 {dept}: {info['position']} ({info['agent_name']})")
+            if info['coalitions']:
+                print(f"   In coalitions: {info['coalitions']}")
             print()
         
         # Show mayor's final decision
@@ -136,7 +152,7 @@ async def demo_agent_discussion():
 
 def main():
     """Run the demo"""
-    print("Starting Mailopolis Multi-Agent Discussion Demo...")
+    print("Starting Mailopolis Political Maneuvering Demo...")
     
     # Check for API keys
     if not os.getenv("OPENAI_API_KEY") and not os.getenv("ANTHROPIC_API_KEY"):

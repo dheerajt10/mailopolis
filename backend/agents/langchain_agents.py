@@ -182,110 +182,96 @@ class LangChainAgentManager:
 
     async def discuss_and_evaluate_proposal(self, proposal: PolicyProposal,
                                           game_context: Dict[str, Any]) -> Dict[str, Any]:
-        """New method: Full discussion then mayor decision"""
+        """New method: Independent political discussions then mayor decision"""
         
-        print(f"🗣️  Starting multi-agent discussion for: {proposal.title}")
+        print(f"🏛️  Starting political maneuvering for: {proposal.title}")
         
-        # Run the multi-agent discussion
-        chat_rounds = await self.chat_system.discuss_proposal(proposal, game_context)
+        # Run the independent political discussion
+        political_discussion = await self.chat_system.discuss_proposal(proposal, game_context)
         
-        # Extract final positions for mayor
-        final_round = chat_rounds[-1] if chat_rounds else None
+        # Extract department positions from final positions
         department_positions = {}
-        
-        if final_round:
-            for message in final_round.messages:
-                # Parse final positions
-                if "POSITION:" in message.content:
-                    lines = message.content.split('\n')
-                    position = "NEUTRAL"  # Default
-                    reasoning = message.content
-                    conditions = "None"
-                    
-                    for line in lines:
-                        if line.startswith('POSITION:'):
-                            position = line.replace('POSITION:', '').strip()
-                        elif line.startswith('REASONING:'):
-                            reasoning = line.replace('REASONING:', '').strip()
-                        elif line.startswith('CONDITIONS:'):
-                            conditions = line.replace('CONDITIONS:', '').strip()
-                    
-                    department_positions[message.department] = {
+        for agent_name, position in political_discussion.final_positions.items():
+            # Find which department this agent belongs to
+            for dept, agent in self.agents.items():
+                if agent.personality.name == agent_name and dept != Department.MAYOR:
+                    department_positions[dept.value] = {
                         'position': position,
-                        'reasoning': reasoning,
-                        'conditions': conditions,
-                        'agent_name': message.speaker,
-                        'full_message': message.content
-                    }
-                else:
-                    # Fallback if format not followed
-                    department_positions[message.department] = {
-                        'position': 'NEUTRAL',
-                        'reasoning': message.content,
+                        'reasoning': f"Based on private discussions and department expertise",
                         'conditions': 'None',
-                        'agent_name': message.speaker,
-                        'full_message': message.content
+                        'agent_name': agent_name,
+                        'coalitions': [c for c in political_discussion.coalitions_formed if agent_name in c]
                     }
         
-        # Mayor makes final decision based on discussion
-        print("👑 Mayor making final decision based on department discussion...")
-        mayor_evaluation = await self._mayor_decide_after_discussion(
-            proposal, game_context, chat_rounds, department_positions
+        # Mayor makes final decision based on lobbying and political landscape
+        print("👑 Mayor making final decision based on political discussions and lobbying...")
+        mayor_evaluation = await self._mayor_decide_after_politics(
+            proposal, game_context, political_discussion
         )
         
         return {
-            'chat_rounds': chat_rounds,
+            'political_discussion': political_discussion,
+            'private_conversations': political_discussion.private_conversations,
+            'mayor_lobbying': political_discussion.mayor_lobbying,
+            'coalitions_formed': political_discussion.coalitions_formed,
             'department_positions': department_positions,
             'mayor_decision': mayor_evaluation,
-            'discussion_summary': self._create_discussion_summary(chat_rounds)
+            'discussion_summary': self._create_political_summary(political_discussion)
         }
 
-    async def _mayor_decide_after_discussion(self, proposal: PolicyProposal,
-                                           game_context: Dict[str, Any],
-                                           chat_rounds: List,
-                                           department_positions: Dict) -> ProposalEvaluation:
-        """Mayor decides after hearing full department discussion"""
+    async def _mayor_decide_after_politics(self, proposal: PolicyProposal,
+                                          game_context: Dict[str, Any],
+                                          political_discussion) -> ProposalEvaluation:
+        """Mayor decides after political maneuvering and lobbying"""
         
-        discussion_summary = "\n\n".join([
-            f"ROUND {i+1}: {len(round_data.messages)} messages"
-            for i, round_data in enumerate(chat_rounds)
-        ])
+        # Summarize private conversations
+        conversation_summary = f"Private Conversations: {len(political_discussion.private_conversations)}\n"
+        for i, conv in enumerate(political_discussion.private_conversations):
+            participants = " & ".join(conv.participants)
+            conversation_summary += f"- {participants}: {conv.purpose.replace('_', ' ')}\n"
         
-        positions_summary = "\n".join([
-            f"- {dept}: {info['position']} ({info['agent_name']})"
-            for dept, info in department_positions.items()
-        ])
+        # Summarize lobbying attempts
+        lobbying_summary = f"\nLobbying Attempts: {len(political_discussion.mayor_lobbying)}\n"
+        for lobby in political_discussion.mayor_lobbying:
+            lobbying_summary += f"- {lobby.agent_name}: {lobby.influence_attempt.upper()}\n"
+            lobbying_summary += f"  Message: {lobby.message.content[:100]}...\n"
         
-        detailed_reasoning = "\n".join([
-            f"- {info['agent_name']}: {info['reasoning']}"
-            for info in department_positions.values()
-        ])
+        # Summarize coalitions
+        coalition_summary = f"\nCoalitions Formed: {len(political_discussion.coalitions_formed)}\n"
+        for i, coalition in enumerate(political_discussion.coalitions_formed):
+            coalition_summary += f"- Coalition {i+1}: {' & '.join(coalition)}\n"
         
-        user_input = f"""MAYOR'S FINAL DECISION
+        # Summarize final positions
+        positions_summary = "\nDepartment Positions:\n"
+        for agent_name, position in political_discussion.final_positions.items():
+            positions_summary += f"- {agent_name}: {position}\n"
+        
+        user_input = f"""MAYOR'S FINAL DECISION - AFTER POLITICAL MANEUVERING
 
 PROPOSAL: {proposal.title}
 DESCRIPTION: {proposal.description}
 
-DEPARTMENT HEAD DISCUSSION SUMMARY:
-{discussion_summary}
-
-FINAL DEPARTMENT POSITIONS:
+POLITICAL INTELLIGENCE BRIEFING:
+{conversation_summary}
+{lobbying_summary}
+{coalition_summary}
 {positions_summary}
 
-DEPARTMENT REASONING:
-{detailed_reasoning}
+As Mayor, you've observed the political maneuvering around this proposal. Consider:
 
-As Mayor, you've heard the full discussion between your department heads. Make your final decision considering:
-1. The technical expertise of each department
-2. The political implications  
-3. The city's overall priorities
-4. Areas of consensus vs. disagreement
+1. WHO LOBBIED YOU: Which departments made the effort to influence you?
+2. COALITION STRENGTH: Are there strong alliances for/against?
+3. POLITICAL COSTS: What are the political implications of your decision?
+4. DEPARTMENT EXPERTISE: Which departments have the most relevant expertise?
+5. PUBLIC PERCEPTION: How will this decision affect your approval rating?
+
+The agents who lobbied you directly are showing this issue is important to them. Those who didn't lobby either don't care strongly or are politically passive.
 
 Provide your decision in the standard format:
 Decision: [SUPPORT/OPPOSE/NEUTRAL]
-Reasoning: [Your mayoral perspective in 2-3 sentences]
+Reasoning: [Your mayoral perspective considering the political dynamics in 2-3 sentences]
 Confidence: [1-10]
-Political_Impact: [How this decision affects your political standing]"""
+Political_Impact: [How this decision affects your political standing and relationships]"""
 
         mayor_agent = self.agents[Department.MAYOR]
         
@@ -296,54 +282,69 @@ Political_Impact: [How this decision affects your political standing]"""
                 return mayor_agent._parse_evaluation_response(response.content, proposal)
             except Exception as e:
                 print(f"❌ Mayor decision error: {e}")
-                return self._fallback_mayor_decision(proposal, department_positions)
+                return self._fallback_political_decision(proposal, political_discussion)
         else:
-            return self._fallback_mayor_decision(proposal, department_positions)
+            return self._fallback_political_decision(proposal, political_discussion)
 
-    def _fallback_mayor_decision(self, proposal: PolicyProposal, 
-                               department_positions: Dict) -> ProposalEvaluation:
+    def _fallback_political_decision(self, proposal: PolicyProposal, 
+                                   political_discussion) -> ProposalEvaluation:
         """Fallback mayor decision when LLM fails"""
-        support_count = sum(1 for info in department_positions.values() 
-                          if 'SUPPORT' in info['position'].upper())
+        support_count = sum(1 for position in political_discussion.final_positions.values() 
+                          if 'SUPPORT' in position.upper())
         
-        total_departments = len(department_positions)
-        if total_departments == 0:
+        # Give extra weight to agents who lobbied
+        lobby_influence = len([l for l in political_discussion.mayor_lobbying 
+                             if l.influence_attempt == 'support']) * 0.5
+        
+        total_agents = len(political_discussion.final_positions)
+        if total_agents == 0:
             accept = False
             confidence = 50
         else:
-            accept = support_count > total_departments / 2
-            confidence = min(80, max(40, int((support_count / total_departments) * 100)))
+            weighted_support = (support_count + lobby_influence) / total_agents
+            accept = weighted_support > 0.5
+            confidence = min(80, max(40, int(weighted_support * 100)))
         
         return ProposalEvaluation(
             accept=accept,
-            reasoning=f"Based on department input, {support_count}/{total_departments} departments support this proposal.",
+            reasoning=f"Based on political maneuvering, {support_count}/{total_agents} agents support this proposal, with {len(political_discussion.mayor_lobbying)} lobbying attempts.",
             confidence=confidence,
             concerns=[],
             alternative_suggestions=[]
         )
 
-    def _create_discussion_summary(self, chat_rounds: List) -> str:
-        """Create human-readable summary of the discussion"""
-        if not chat_rounds:
-            return "No discussion occurred due to system errors."
+    def _create_political_summary(self, political_discussion) -> str:
+        """Create human-readable summary of the political maneuvering"""
+        if not political_discussion.private_conversations:
+            return "No political discussions occurred due to system errors."
             
-        total_messages = sum(len(round_data.messages) for round_data in chat_rounds)
+        total_conversations = len(political_discussion.private_conversations)
+        total_lobbying = len(political_discussion.mayor_lobbying)
         
         summary_parts = [
-            f"Multi-agent discussion completed in {len(chat_rounds)} rounds with {total_messages} total exchanges.",
+            f"Political maneuvering completed with {total_conversations} private conversations and {total_lobbying} mayor lobbying attempts.",
             "",
-            "Key Discussion Points:"
+            "Private Conversations:"
         ]
         
-        # Extract key themes from final round
-        if chat_rounds:
-            final_messages = chat_rounds[-1].messages
-            for msg in final_messages:
-                if "POSITION:" in msg.content:
-                    position_line = [line for line in msg.content.split('\n') if line.startswith('POSITION:')]
-                    if position_line:
-                        position = position_line[0].replace('POSITION:', '').strip()
-                        summary_parts.append(f"- {msg.speaker}: {position}")
+        # Summarize private conversations
+        for conv in political_discussion.private_conversations:
+            participants = " & ".join(conv.participants)
+            summary_parts.append(f"- {participants}: {conv.purpose.replace('_', ' ')}")
+        
+        if political_discussion.coalitions_formed:
+            summary_parts.append("\nCoalitions Formed:")
+            for i, coalition in enumerate(political_discussion.coalitions_formed):
+                summary_parts.append(f"- Coalition {i+1}: {' & '.join(coalition)}")
+        
+        if political_discussion.mayor_lobbying:
+            summary_parts.append("\nMayor Lobbying:")
+            for lobby in political_discussion.mayor_lobbying:
+                summary_parts.append(f"- {lobby.agent_name}: {lobby.influence_attempt.upper()}")
+        
+        summary_parts.append("\nFinal Positions:")
+        for agent_name, position in political_discussion.final_positions.items():
+            summary_parts.append(f"- {agent_name}: {position}")
         
         return "\n".join(summary_parts)
 

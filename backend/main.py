@@ -28,13 +28,6 @@ app.add_middleware(
 async def root():
     return {"message": "Welcome to Mailopolis! 🏙️"}
 
-# Add AgentMail endpoints
-from agentmail_api import add_agentmail_endpoints
-add_agentmail_endpoints(app)
-
-# Add LangChain-powered game endpoints (main game)
-from langchain_api import add_langchain_endpoints
-add_langchain_endpoints(app)
 
 if __name__ == "__main__":
     # Run the FastAPI app directly 
