@@ -11,7 +11,7 @@ export function BaseLayout() {
 			</div>
 
 			<div className="app-shell__frame">
-				<header className="app-shell__header">
+				{/* <header className="app-shell__header">
 					<div className="app-shell__branding">
 						<span className="app-shell__sigil">[MO]</span>
 						<h1 className="app-shell__title">
@@ -26,7 +26,7 @@ export function BaseLayout() {
 							LINK GOOD
 						</span>
 					</div>
-				</header>
+				</header> */}
 
 				<div className="app-shell__body">
 					<main className="app-shell__stage">
@@ -37,13 +37,13 @@ export function BaseLayout() {
 					</main>
 				</div>
 
-				<footer className="app-shell__footer">
+				{/* <footer className="app-shell__footer">
 					<span className="footer__light" />
 					<span className="footer__text">
 						Awaiting system modules: Email, Dashboard, Contacts,
 						Crisis Center
 					</span>
-				</footer>
+				</footer> */}
 			</div>
 		</div>
 	);

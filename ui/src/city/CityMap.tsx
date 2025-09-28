@@ -248,7 +248,7 @@ export const CityMap: React.FC = () => {
 		{
 			id: 'park2',
 			type: 'park',
-			position: { x: 650, y: 460 },
+			position: { x: 650, y: 480 },
 			size: { width: 60, height: 60 },
 			agent: '',
 			label: 'EAST PARK',
