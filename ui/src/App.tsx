@@ -1,7 +1,12 @@
 import { BaseLayout } from './layout/BaseLayout';
+import { GameProvider } from './contexts/GameContext';
 
 function App() {
-  return <BaseLayout />;
+  return (
+    <GameProvider>
+      <BaseLayout />
+    </GameProvider>
+  );
 }
 
 export default App;

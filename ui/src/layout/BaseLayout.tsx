@@ -1,102 +1,58 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { CityMap } from '../city/CityMap';
+import { useGame } from '../contexts/GameContext';
+import type { PolicyProposal } from '../services/api';
 import './BaseLayout.css';
 
-const DEMO_PROPOSALS = [
-	{
-		id: '32bc27d0-1044-4864-b17e-6e448ee92d20',
-		title: 'Emergency Renewable Energy Initiative',
-		description:
-			'Fast-track solar panel installation on all public buildings within 6 months.',
-		proposedBy: 'ai_department_Energy',
-		targetDepartment: 'Energy',
-		sustainabilityImpact: 25,
-		economicImpact: -20,
-		politicalImpact: 15,
-		bribeAmount: 0,
-		createdAt: '2025-09-28T08:31:50.726149',
-	},
-	{
-		id: '15ed8d62-4b88-4da8-a819-bcec854b3d55',
-		title: 'Energy Efficiency Retrofits',
-		description:
-			'Low-cost energy efficiency improvements to reduce city utility costs.',
-		proposedBy: 'ai_department_Energy',
-		targetDepartment: 'Energy',
-		sustainabilityImpact: 15,
-		economicImpact: 10,
-		politicalImpact: 5,
-		bribeAmount: 0,
-		createdAt: '2025-09-28T08:31:50.726166',
-	},
-	{
-		id: '57c3f3f2-9fe4-4554-87bb-261e32bb34f3',
-		title: 'Smart Grid Modernization',
-		description:
-			'Upgrade city electrical grid with smart monitoring and renewable integration.',
-		proposedBy: 'ai_department_Energy',
-		targetDepartment: 'Energy',
-		sustainabilityImpact: 20,
-		economicImpact: -15,
-		politicalImpact: 10,
-		bribeAmount: 0,
-		createdAt: '2025-09-28T08:31:50.726173',
-	},
-	{
-		id: 'b872045e-a817-4b94-bde6-b25b5264a6c2',
-		title: 'Electric Bus Fleet Conversion',
-		description: 'Replace all diesel buses with electric vehicles over 18 months.',
-		proposedBy: 'ai_department_Transportation',
-		targetDepartment: 'Transportation',
-		sustainabilityImpact: 30,
-		economicImpact: -25,
-		politicalImpact: 20,
-		bribeAmount: 0,
-		createdAt: '2025-09-28T08:31:50.726181',
-	},
-	{
-		id: 'd6e39f46-c3b7-4108-bea4-9eff94e94db0',
-		title: 'Free Public Transit Month',
-		description:
-			'Provide free public transportation for one month to boost ridership.',
-		proposedBy: 'ai_department_Transportation',
-		targetDepartment: 'Transportation',
-		sustainabilityImpact: 10,
-		economicImpact: -15,
-		politicalImpact: 25,
-		bribeAmount: 0,
-		createdAt: '2025-09-28T08:31:50.726187',
-	},
-	{
-		id: '15f20170-98b5-4ede-883c-198affd4fd39',
-		title: 'Bike Lane Expansion Project',
-		description: 'Add 20 miles of protected bike lanes throughout the city.',
-		proposedBy: 'ai_department_Transportation',
-		targetDepartment: 'Transportation',
-		sustainabilityImpact: 15,
-		economicImpact: -10,
-		politicalImpact: 5,
-		bribeAmount: 0,
-		createdAt: '2025-09-28T08:31:50.726193',
-	},
-	{
-		id: 'e64371c2-3408-4631-b55b-a490ca857673',
-		title: 'Affordable Housing Guarantee',
-		description:
-			'Mandate that 30% of all new developments include affordable units.',
-		proposedBy: 'ai_department_Housing',
-		targetDepartment: 'Housing',
-		sustainabilityImpact: 5,
-		economicImpact: -10,
-		politicalImpact: 30,
-		bribeAmount: 0,
-		createdAt: '2025-09-28T08:31:50.726199',
-	},
-] as const;
+const formatImpactValue = (value: number | undefined) => {
+  if (value == null) return '0';
+  return value >= 0 ? `+${value}` : `${value}`;
+};
+const formatDepartmentName = (department: string | undefined) =>
+  (department ?? '')
+    .replace(/_/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/\s+/g, ' ')
+    .trim();
 
+const formatProposalTimestamp = (timestamp: string) => {
+  if (!timestamp) {
+    return 'just now';
+  }
+  try {
+    return new Date(timestamp).toLocaleString(undefined, {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    });
+  } catch (error) {
+    return timestamp;
+  }
+};
+
+const formatCurrency = (value: number | undefined) => `$${(value ?? 0).toLocaleString()}`;
 
 export function BaseLayout() {
 	const [activeProposalId, setActiveProposalId] = useState<string | null>(null);
+	const {
+		gameState,
+		suggestions,
+		isLoading,
+		error,
+		isGameActive,
+		startGame,
+		stopGame,
+		refreshGameState,
+		refreshSuggestions,
+		playTurn,
+	} = useGame();
+
+	const proposals = useMemo(() => suggestions ?? [], [suggestions]);
+	const activeProposal =
+		activeProposalId == null
+			? null
+			: proposals.find((proposal) => proposal.id === activeProposalId) ?? null;
+	const activeEvents = gameState?.active_events ?? [];
+	const hasActiveGame = isGameActive;
 
 	const handleProposalOpen = (id: string) => {
 		setActiveProposalId(id);
@@ -106,14 +62,31 @@ export function BaseLayout() {
 		setActiveProposalId(null);
 	};
 
-	const handleProposalSelect = (proposal: (typeof DEMO_PROPOSALS)[number]) => {
-		console.log('Selected proposal', proposal.id);
+	const handleProposalSelect = async (proposal: PolicyProposal) => {
+		await playTurn({
+			title: proposal.title,
+			description: proposal.description,
+			target_department: proposal.target_department,
+			sustainability_impact: proposal.sustainability_impact,
+			economic_impact: proposal.economic_impact,
+			political_impact: proposal.political_impact,
+		});
+		setActiveProposalId(null);
 	};
 
-	const activeProposal =
-		activeProposalId == null
-			? null
-			: DEMO_PROPOSALS.find((proposal) => proposal.id === activeProposalId) ?? null;
+	const handleStartGame = async () => {
+		await startGame();
+		setActiveProposalId(null);
+	};
+
+	const handleStopGame = () => {
+		stopGame();
+		setActiveProposalId(null);
+	};
+
+	const handleRefreshSuggestions = async () => {
+		await refreshSuggestions();
+	};
 
 	return (
 		<div className="app-shell">
@@ -131,23 +104,31 @@ export function BaseLayout() {
 					<dl className="city-stats">
 						<div className="city-stat city-stat--budget">
 							<dt>Budget</dt>
-							<dd>$2.3M</dd>
+							<dd>{gameState ? `$${(gameState.city_stats.budget / 1000000).toFixed(1)}M` : '--'}</dd>
 						</div>
 						<div className="city-stat city-stat--sustainability">
 							<dt>Sustainability Score</dt>
-							<dd>68</dd>
+							<dd>{gameState?.city_stats.sustainability_score ?? '--'}</dd>
+						</div>
+						<div className="city-stat city-stat--economy">
+							<dt>Economic Growth</dt>
+							<dd>{gameState ? `${gameState.city_stats.economic_growth}%` : '--'}</dd>
+						</div>
+						<div className="city-stat city-stat--approval">
+							<dt>Public Approval</dt>
+							<dd>{gameState ? `${gameState.city_stats.public_approval}%` : '--'}</dd>
 						</div>
 						<div className="city-stat city-stat--infrastructure">
 							<dt>Infrastructure Health</dt>
-							<dd>74%</dd>
+							<dd>{gameState ? `${gameState.city_stats.infrastructure_health}%` : '--'}</dd>
 						</div>
 						<div className="city-stat city-stat--happiness">
 							<dt>Population Happiness</dt>
-							<dd>64%</dd>
+							<dd>{gameState ? `${gameState.city_stats.population_happiness}%` : '--'}</dd>
 						</div>
 						<div className="city-stat city-stat--corruption">
 							<dt>Corruption Level</dt>
-							<dd>Low</dd>
+							<dd>{gameState ? `${gameState.city_stats.corruption_level}%` : '--'}</dd>
 						</div>
 					</dl>
 				</header>
@@ -160,11 +141,18 @@ export function BaseLayout() {
 						<header className="proposal-sidebar__header">
 							<h2 className="proposal-sidebar__title">Strategic Proposals</h2>
 							<p className="proposal-sidebar__subtitle">
-								Quick picks surfaced by city departments.
+								Latest moves surfaced by the Maylopolis cabinet.
 							</p>
 						</header>
 						<div className="proposal-list">
-							{DEMO_PROPOSALS.map((proposal) => (
+							{proposals.length === 0 && (
+								<div className="proposal-list__empty">
+									{hasActiveGame
+										? 'No proposals available yet. Refresh suggestions to pull new ideas from departments.'
+										: 'Start the simulation to receive live proposals from departments.'}
+								</div>
+							)}
+							{proposals.map((proposal) => (
 								<article key={proposal.id} className="proposal-card">
 									<header className="proposal-card__top">
 										<h3>{proposal.title}</h3>
@@ -172,13 +160,14 @@ export function BaseLayout() {
 											type="button"
 											className="proposal-card__select"
 											onClick={() => handleProposalSelect(proposal)}
+											disabled={isLoading || !hasActiveGame}
 										>
-											Select
+											{isLoading ? 'Working…' : hasActiveGame ? 'Select' : 'Start game first'}
 										</button>
 									</header>
 									<div className="proposal-card__summary">
 										<span className="proposal-card__department">
-											{proposal.targetDepartment}
+											{formatDepartmentName(proposal.target_department) || 'Unknown'}
 										</span>
 										<button
 											type="button"
@@ -192,9 +181,70 @@ export function BaseLayout() {
 											</span>
 										</button>
 									</div>
+									<div className="proposal-card__impacts">
+										<span>S {formatImpactValue(proposal.sustainability_impact)}</span>
+										<span>E {formatImpactValue(proposal.economic_impact)}</span>
+										<span>P {formatImpactValue(proposal.political_impact)}</span>
+									</div>
 								</article>
 							))}
 						</div>
+						<div className="game-controls">
+							<div className="game-controls__buttons">
+								{!hasActiveGame ? (
+									<button
+										className="start-game-btn"
+										onClick={handleStartGame}
+										disabled={isLoading}
+									>
+										{isLoading ? 'Starting…' : 'Start Simulation'}
+									</button>
+								) : (
+									<>
+										<button
+											className="refresh-btn"
+											onClick={refreshGameState}
+											disabled={isLoading}
+										>
+											{isLoading ? 'Refreshing…' : 'Refresh State'}
+										</button>
+										<button
+											className="refresh-btn"
+											onClick={handleRefreshSuggestions}
+											disabled={isLoading}
+										>
+											{isLoading ? 'Updating…' : 'Refresh Suggestions'}
+										</button>
+										<button
+											className="stop-game-btn"
+											onClick={handleStopGame}
+											disabled={isLoading}
+										>
+											Stop Simulation
+										</button>
+									</>
+								)}
+							</div>
+							<div
+								className={`game-controls__meta${isLoading ? ' game-controls__meta--loading' : ''}`}
+							>
+								<span className="game-controls__status-dot" aria-hidden="true" />
+								<span>
+										{hasActiveGame
+											? `Turn ${gameState?.turn ?? 0}`
+											: 'Simulation idle'}
+								</span>
+								<span>Active events: {activeEvents.length}</span>
+								{gameState?.is_game_over && (
+									<span className="game-controls__badge">Game over</span>
+								)}
+							</div>
+						</div>
+						{error && (
+							<div className="game-error" role="alert">
+								{error}
+							</div>
+						)}
 					</aside>
 
 					<main
@@ -252,46 +302,47 @@ export function BaseLayout() {
 									<dl className="proposal-modal__details">
 										<div>
 											<dt>Proposed by</dt>
-											<dd>{activeProposal.proposedBy}</dd>
-										</div>
-										<div>
-											<dt>Department</dt>
-											<dd>{activeProposal.targetDepartment}</dd>
-										</div>
-										<div>
-											<dt>Bribe</dt>
-											<dd>${activeProposal.bribeAmount}</dd>
-										</div>
-									</dl>
-								</section>
-								<section className="proposal-modal__section">
-									<h4>Impact Scores</h4>
-									<ul className="proposal-modal__impacts">
-										<li>
-											<span>Sustainability</span>
-											<strong>{activeProposal.sustainabilityImpact}</strong>
-										</li>
-										<li>
-											<span>Economic</span>
-											<strong>{activeProposal.economicImpact}</strong>
-										</li>
-										<li>
-											<span>Political</span>
-											<strong>{activeProposal.politicalImpact}</strong>
-										</li>
-									</ul>
-								</section>
+										<dd>{activeProposal.proposed_by || 'Unknown'}</dd>
+									</div>
+									<div>
+										<dt>Department</dt>
+										<dd>{formatDepartmentName(activeProposal.target_department) || 'Unknown'}</dd>
+									</div>
+									<div>
+										<dt>Bribe</dt>
+										<dd>{formatCurrency(activeProposal.bribe_amount)}</dd>
+									</div>
+								</dl>
+							</section>
+							<section className="proposal-modal__section">
+								<h4>Impact Scores</h4>
+								<ul className="proposal-modal__impacts">
+									<li>
+										<span>Sustainability</span>
+										<strong>{formatImpactValue(activeProposal.sustainability_impact)}</strong>
+									</li>
+									<li>
+										<span>Economic</span>
+										<strong>{formatImpactValue(activeProposal.economic_impact)}</strong>
+									</li>
+									<li>
+										<span>Political</span>
+										<strong>{formatImpactValue(activeProposal.political_impact)}</strong>
+									</li>
+								</ul>
+							</section>
 							</div>
-							<p className="proposal-modal__timestamp">
-								Created {new Date(activeProposal.createdAt).toLocaleString()}
-							</p>
+								<p className="proposal-modal__timestamp">
+									Created {formatProposalTimestamp(activeProposal.created_at)}
+								</p>
 							<footer className="proposal-modal__footer">
 								<button
 									type="button"
 									className="proposal-modal__select"
 									onClick={() => handleProposalSelect(activeProposal)}
+									disabled={isLoading || !hasActiveGame}
 								>
-									Select proposal
+									{isLoading ? 'Working…' : hasActiveGame ? 'Select proposal' : 'Start game first'}
 								</button>
 							</footer>
 						</div>

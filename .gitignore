@@ -60,9 +60,4 @@ Thumbs.db
 */__pycache__/
 __pycache__/
 
-# cursor rules
-.cursorrules
-
-# Node.js dependencies
-node_modules/
-**/node_modules/
+mailenv/
