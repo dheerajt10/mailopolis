@@ -5,13 +5,15 @@ from enum import Enum
 import uuid
 
 class Department(str, Enum):
-    POWER_GRID = "PowerGrid"
-    HOSPITAL = "Hospital" 
-    TRANSIT = "Transit"
-    FINANCE = "Finance"
+    ENERGY = "Energy"
+    TRANSPORTATION = "Transportation"
+    HOUSING = "Housing"  
+    WASTE = "Waste"
+    WATER = "Water"
+    ECONOMIC_DEV = "EconomicDevelopment"
     MAYOR = "Mayor"
     CITIZENS = "Citizens"
-    MEDIA = "Media"
+    BAD_ACTORS = "BadActors"
 
 class DecisionStyle(str, Enum):
     CAUTIOUS = "cautious"
@@ -26,11 +28,11 @@ class CommunicationStyle(str, Enum):
     POLITICAL = "political"
 
 class PriorityType(str, Enum):
-    BUDGET = "budget"
-    HEALTH = "health"
-    APPROVAL = "approval"
     SUSTAINABILITY = "sustainability"
-    EFFICIENCY = "efficiency"
+    ECONOMIC_GROWTH = "economic_growth"
+    SOCIAL_EQUITY = "social_equity"
+    POLITICAL_APPROVAL = "political_approval"
+    CORRUPTION_RESISTANCE = "corruption_resistance"
 
 class Priority(BaseModel):
     type: PriorityType
@@ -174,3 +176,78 @@ class Crisis(BaseModel):
     description: str
     time_to_escalate: int  # minutes
     resolution_requirements: Dict[str, Union[List[Department], int]]
+
+# New models for adversarial sustainability game
+
+class BadActorType(str, Enum):
+    DEVELOPER_GROUP = "developer_group"
+    CORPORATE_LOBBY = "corporate_lobby"
+    CORRUPT_OFFICIAL = "corrupt_official"
+    FOSSIL_FUEL_COMPANY = "fossil_fuel_company"
+
+class BadActor(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    type: BadActorType
+    influence_power: int = Field(ge=0, le=100)  # how persuasive they are
+    corruption_budget: int = Field(ge=0)  # currency available for bribes
+    target_departments: List[Department]  # which departments they try to corrupt
+    active: bool = True
+
+class PolicyProposal(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    description: str
+    proposed_by: str  # agent ID (player or bad actor)
+    target_department: Department
+    sustainability_impact: int = Field(ge=-50, le=50)  # positive = good for sustainability
+    economic_impact: int = Field(ge=-50, le=50)  # economic argument strength
+    political_impact: int = Field(ge=-50, le=50)  # political appeal
+    bribe_amount: int = Field(default=0)  # if from bad actor
+    created_at: datetime = Field(default_factory=datetime.now)
+
+class DepartmentSustainabilityScore(BaseModel):
+    department: Department
+    score: int = Field(ge=0, le=100, default=50)
+    last_updated: datetime = Field(default_factory=datetime.now)
+    
+class BlockchainTransaction(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    from_agent: str
+    to_agent: str
+    transaction_type: str  # "bribe", "policy_implementation", "department_score_update", etc.
+    amount: Optional[int] = None  # for monetary transactions
+    data: Dict = Field(default_factory=dict)  # additional transaction data
+    timestamp: datetime = Field(default_factory=datetime.now)
+    verified: bool = True  # blockchain verification status
+
+class SustainabilityGameState(BaseModel):
+    """Game state for the adversarial sustainability simulation"""
+    sustainability_index: int = Field(ge=0, le=100, default=50)  # average of all departments
+    department_scores: Dict[Department, int] = Field(default_factory=dict)
+    mayor_trust_in_player: int = Field(ge=0, le=100, default=50)
+    bad_actor_influence: int = Field(ge=0, le=100, default=30)
+    blockchain_transactions: List[BlockchainTransaction] = Field(default_factory=list)
+    round_number: int = Field(default=1)
+    active_bad_actors: Dict[str, BadActor] = Field(default_factory=dict)
+    pending_proposals: List[PolicyProposal] = Field(default_factory=list)
+    
+    def calculate_sustainability_index(self) -> int:
+        """Calculate overall sustainability as average of department scores"""
+        if not self.department_scores:
+            return 50
+        return int(sum(self.department_scores.values()) / len(self.department_scores))
+    
+    def add_blockchain_transaction(self, from_agent: str, to_agent: str, 
+                                 transaction_type: str, amount: Optional[int] = None, 
+                                 data: Dict = None) -> BlockchainTransaction:
+        """Add a new verified transaction to the blockchain"""
+        transaction = BlockchainTransaction(
+            from_agent=from_agent,
+            to_agent=to_agent, 
+            transaction_type=transaction_type,
+            amount=amount,
+            data=data or {}
+        )
+        self.blockchain_transactions.append(transaction)
+        return transaction

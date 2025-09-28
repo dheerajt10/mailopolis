@@ -3,13 +3,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 import uvicorn
 
-from models.game_models import GameState, EmailThread, PlayerAction, ActionOutcome
-from game.game_engine import GameEngine
+from models.game_models import (
+    GameState, EmailThread, PlayerAction, ActionOutcome, 
+    SustainabilityGameState, PolicyProposal, Department
+)
+from game.game_engine import SustainabilityGameEngine
 
 app = FastAPI(
-    title="Mailopolis Backend",
-    description="Email-based city management game backend",
-    version="1.0.0"
+    title="Mailopolis - Adversarial Sustainability Game",
+    description="Compete against bad actors to maximize city sustainability",
+    version="2.0.0"
 )
 
 # Enable CORS for frontend
@@ -22,85 +25,105 @@ app.add_middleware(
 )
 
 # Global game instance (in production, this would be per-session)
-game_engine = GameEngine()
+game_engine = SustainabilityGameEngine()
 
 @app.get("/")
 async def root():
     return {"message": "Welcome to Mailopolis! 🏙️"}
 
-@app.get("/api/game/state", response_model=GameState)
+@app.get("/api/game/state")
 async def get_game_state():
-    """Get current game state and metrics"""
-    return game_engine.game_state
+    """Get current sustainability game state and metrics"""
+    return game_engine.get_game_status()
 
-@app.get("/api/agents")
-async def get_agents():
-    """Get all agents with their current trust levels"""
-    agents_info = []
-    for agent in game_engine.agents.values():
-        agents_info.append({
-            "id": agent.id,
-            "name": agent.name,
-            "department": agent.department.value,
-            "trust_level": agent.trust_level,
-            "personality": {
-                "decision_style": agent.personality.decision_style.value,
-                "communication_style": agent.personality.communication_style.value,
-                "risk_tolerance": agent.personality.risk_tolerance
-            }
-        })
-    return {"agents": agents_info}
-
-@app.get("/api/emails/digest", response_model=List[EmailThread])
-async def get_daily_digest():
-    """Get the top 3 email threads for the day"""
-    return game_engine.get_daily_digest()
-
-@app.get("/api/emails/{thread_id}")
-async def get_thread(thread_id: str):
-    """Get a specific email thread with all messages"""
-    thread = game_engine.email_threads.get(thread_id)
-    if not thread:
-        raise HTTPException(status_code=404, detail="Thread not found")
-    
-    # Include agent names in messages for frontend display
-    enriched_messages = []
-    for message in thread.messages:
-        agent = game_engine.agents.get(message.from_agent)
-        enriched_messages.append({
-            **message.dict(),
-            "from_agent_name": agent.name if agent else "Unknown",
-            "from_agent_department": agent.department.value if agent else "Unknown"
-        })
-    
+@app.get("/api/departments")
+async def get_departments():
+    """Get all city departments with their current sustainability scores"""
     return {
-        **thread.dict(),
-        "messages": enriched_messages
+        "departments": [
+            {
+                "name": dept.value,
+                "sustainability_score": game_engine.game_state.department_scores.get(dept, 50)
+            }
+            for dept in [Department.ENERGY, Department.TRANSPORTATION, Department.HOUSING, 
+                        Department.WASTE, Department.WATER, Department.ECONOMIC_DEV]
+        ],
+        "overall_index": game_engine.game_state.sustainability_index
     }
 
-@app.post("/api/actions/ask", response_model=ActionOutcome)
-async def process_ask_action(action: PlayerAction):
-    """Process an ASK action"""
-    if action.type.value != "ask":
-        raise HTTPException(status_code=400, detail="Action type must be 'ask'")
-    
-    return game_engine.process_player_action(action)
+@app.get("/api/round/start")
+async def start_new_round():
+    """Start a new round of the adversarial sustainability game"""
+    return game_engine.start_new_round()
 
-@app.post("/api/actions/advise", response_model=ActionOutcome)
-async def process_advise_action(action: PlayerAction):
-    """Process an ADVISE action"""
-    if action.type.value != "advise":
-        raise HTTPException(status_code=400, detail="Action type must be 'advise'")
-    
-    return game_engine.process_player_action(action)
+@app.get("/api/blockchain/analysis")
+async def get_blockchain_analysis():
+    """Get blockchain transaction analysis for player intelligence gathering"""
+    return game_engine.get_blockchain_analysis()
 
-@app.post("/api/actions/forward", response_model=ActionOutcome)
-async def process_forward_action(action: PlayerAction):
-    """Process a FORWARD action"""
-    if action.type.value != "forward":
-        raise HTTPException(status_code=400, detail="Action type must be 'forward'")
+@app.get("/api/bad-actors")
+async def get_bad_actors():
+    """Get information about active bad actors and their recent activities"""
+    return {
+        "active_bad_actors": {
+            actor.id: {
+                "name": actor.name,
+                "type": actor.type.value,
+                "influence_power": actor.influence_power,
+                "remaining_budget": actor.corruption_budget,
+                "target_departments": [dept.value for dept in actor.target_departments],
+                "active": actor.active
+            }
+            for actor in game_engine.game_state.active_bad_actors.values()
+        }
+    }
+
+@app.post("/api/proposals/submit")
+async def submit_policy_proposal(
+    title: str,
+    description: str, 
+    target_department: str
+):
+    """Submit a sustainability policy proposal as a player"""
+    try:
+        dept = Department(target_department)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid department: {target_department}")
     
-    return game_engine.process_player_action(action)
+    proposal = game_engine.submit_player_proposal(title, description, dept)
+    return {
+        "success": True,
+        "proposal_id": proposal.id,
+        "message": f"Policy proposal '{title}' submitted to {dept.value} department"
+    }
+
+@app.post("/api/mayor/decide")
+async def mayor_decide_on_proposals():
+    """Trigger mayor to make decisions on all pending proposals"""
+    decisions = game_engine.mayor_decide_on_proposals()
+    return {
+        "decisions": decisions,
+        "new_sustainability_index": game_engine.game_state.sustainability_index,
+        "round_number": game_engine.game_state.round_number
+    }
+
+@app.get("/api/proposals/pending")
+async def get_pending_proposals():
+    """Get all pending policy proposals"""
+    return {
+        "proposals": [
+            {
+                "id": prop.id,
+                "title": prop.title,
+                "description": prop.description,
+                "proposed_by": prop.proposed_by,
+                "target_department": prop.target_department.value,
+                "bribe_amount": prop.bribe_amount,
+                "created_at": prop.created_at.isoformat()
+            }
+            for prop in game_engine.game_state.pending_proposals
+        ]
+    }
 
 @app.post("/api/game/advance-day")
 async def advance_day():
@@ -124,46 +147,38 @@ async def get_actions_remaining():
 
 @app.post("/api/game/reset")
 async def reset_game():
-    """Reset the game to initial state"""
+    """Reset the sustainability game to initial state"""
     global game_engine
-    game_engine = GameEngine()
-    return {"success": True, "message": "Game reset successfully"}
+    game_engine = SustainabilityGameEngine()
+    return {"success": True, "message": "Sustainability game reset successfully"}
 
-# Development endpoint to see agent decision process
-@app.post("/api/debug/simulate-action")
-async def simulate_action(action: PlayerAction):
-    """Debug endpoint to see how agents would react without actually processing"""
+# Development and gameplay endpoints
+@app.get("/api/win-conditions")
+async def check_win_conditions():
+    """Check current win and loss condition status"""
+    win_conditions = game_engine._check_win_conditions()
+    loss_conditions = game_engine._check_loss_conditions()
     
-    thread = game_engine.email_threads.get(action.thread_id)
-    if not thread:
-        raise HTTPException(status_code=404, detail="Thread not found")
-    
-    results = {}
-    
-    # Show how each relevant agent would react
-    for agent_id, agent in game_engine.agents.items():
-        if agent.department.value in ['Citizens', 'Media']:
-            continue
-            
-        accepted, confidence = game_engine.decision_engine.evaluate_player_action(
-            agent, action, thread, game_engine.game_state
-        )
-        
-        response = game_engine.response_generator.generate_response(
-            agent, action, accepted, thread
-        )
-        
-        results[agent_id] = {
-            "name": agent.name,
-            "department": agent.department.value,
-            "would_accept": accepted,
-            "confidence": confidence,
-            "response": response,
-            "trust_level": agent.trust_level,
-            "personality": agent.personality.decision_style.value
-        }
-    
-    return results
+    return {
+        "win_conditions": win_conditions,
+        "loss_conditions": loss_conditions,
+        "game_over": any(loss_conditions.values()),
+        "victory": any(win_conditions.values()),
+        "round_number": game_engine.game_state.round_number,
+        "max_rounds": game_engine.max_rounds
+    }
+
+@app.get("/api/player-stats")
+async def get_player_stats():
+    """Get player performance statistics"""
+    return {
+        "mayor_trust": game_engine.game_state.mayor_trust_in_player,
+        "consecutive_rejections": game_engine.player_consecutive_rejections,
+        "max_consecutive_rejections": game_engine.max_consecutive_rejections,
+        "sustainability_index": game_engine.game_state.sustainability_index,
+        "bad_actor_influence": game_engine.game_state.bad_actor_influence,
+        "round_number": game_engine.game_state.round_number
+    }
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)

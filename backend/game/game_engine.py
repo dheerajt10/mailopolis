@@ -3,59 +3,255 @@ import random
 from datetime import datetime, timedelta
 from models.game_models import (
     GameState, Agent, EmailThread, Message, PlayerAction, 
-    ActionOutcome, Crisis, StateEffect, OutcomeType, Department
+    ActionOutcome, Crisis, StateEffect, OutcomeType, Department,
+    SustainabilityGameState, BadActor, BadActorType, PolicyProposal,
+    BlockchainTransaction, DepartmentSustainabilityScore
 )
 from agents.agent_factory import AgentFactory
 from agents.decision_engine import AgentDecisionEngine, AgentResponseGenerator
 
-class GameEngine:
+class SustainabilityGameEngine:
     """
-    Core game engine that manages state, agents, and email threads.
-    This is where all the agent interactions happen.
+    Adversarial sustainability game engine where player competes against bad actors
+    to influence the mayor and maximize city sustainability index.
     """
     
     def __init__(self):
-        self.game_state = GameState()
+        self.game_state = SustainabilityGameState()
         self.agents = AgentFactory.create_all_agents()
         self.email_threads: Dict[str, EmailThread] = {}
-        self.active_crises: Dict[str, Crisis] = {}
         
         # Agent behavior systems
         self.decision_engine = AgentDecisionEngine()
         self.response_generator = AgentResponseGenerator()
         
+        # Initialize sustainability game components
+        self._initialize_departments()
+        self._initialize_bad_actors()
+        
         # Game progression tracking
-        self.actions_taken_today = 0
-        self.max_actions_per_day = 3
+        self.round_number = 1
+        self.max_rounds = 25
+        self.player_consecutive_rejections = 0
+        self.max_consecutive_rejections = 8
         
-    def get_daily_digest(self) -> List[EmailThread]:
-        """
-        Get the top 3 most important email threads for the day.
-        This is what the player sees each morning.
-        """
+    def _initialize_departments(self):
+        """Initialize all city departments with starting sustainability scores"""
+        departments = [
+            Department.ENERGY, Department.TRANSPORTATION, Department.HOUSING,
+            Department.WASTE, Department.WATER, Department.ECONOMIC_DEV
+        ]
         
-        # Generate new threads if needed
-        if len(self.email_threads) < 3:
-            self._generate_daily_scenarios()
+        for dept in departments:
+            # Random starting scores between 40-60
+            score = random.randint(40, 60)
+            self.game_state.department_scores[dept] = score
+            
+        # Calculate initial sustainability index
+        self.game_state.sustainability_index = self.game_state.calculate_sustainability_index()
         
-        # Sort threads by priority and return top 3
-        all_threads = list(self.email_threads.values())
-        active_threads = [t for t in all_threads if t.status == "active"]
+    def _initialize_bad_actors(self):
+        """Create bad actors that will compete against the player"""
+        bad_actors = [
+            BadActor(
+                name="Sprawl Development Corp",
+                type=BadActorType.DEVELOPER_GROUP,
+                influence_power=75,
+                corruption_budget=500000,
+                target_departments=[Department.HOUSING, Department.TRANSPORTATION]
+            ),
+            BadActor(
+                name="Carbon Industries Lobby",
+                type=BadActorType.FOSSIL_FUEL_COMPANY,
+                influence_power=85,
+                corruption_budget=750000,
+                target_departments=[Department.ENERGY, Department.TRANSPORTATION]
+            ),
+            BadActor(
+                name="Waste Management Cartel",
+                type=BadActorType.CORPORATE_LOBBY,
+                influence_power=60,
+                corruption_budget=300000,
+                target_departments=[Department.WASTE, Department.WATER]
+            )
+        ]
         
-        # Sort by priority (crisis level + priority score)
-        def thread_importance(thread: EmailThread) -> float:
-            base_priority = thread.priority
-            crisis_bonus = {
-                "critical": 50,
-                "high": 30, 
-                "medium": 15,
-                "low": 5,
-                None: 0
+        for actor in bad_actors:
+            self.game_state.active_bad_actors[actor.id] = actor
+    
+    def start_new_round(self) -> Dict:
+        """Start a new round of the adversarial sustainability game"""
+        self.round_number = self.game_state.round_number
+        
+        # Generate bad actor moves for this round
+        bad_actor_proposals = self._generate_bad_actor_proposals()
+        
+        # Update blockchain with round start
+        self.game_state.add_blockchain_transaction(
+            from_agent="system",
+            to_agent="all",
+            transaction_type="round_start",
+            data={"round": self.round_number}
+        )
+        
+        return {
+            "round_number": self.round_number,
+            "sustainability_index": self.game_state.sustainability_index,
+            "department_scores": dict(self.game_state.department_scores),
+            "mayor_trust": self.game_state.mayor_trust_in_player,
+            "bad_actor_influence": self.game_state.bad_actor_influence,
+            "bad_actor_proposals": bad_actor_proposals,
+            "blockchain_transactions_count": len(self.game_state.blockchain_transactions)
+        }
+    
+    def _generate_bad_actor_proposals(self) -> List[Dict]:
+        """Generate policy proposals from bad actors for this round"""
+        proposals = []
+        
+        for actor in self.game_state.active_bad_actors.values():
+            if not actor.active or actor.corruption_budget <= 0:
+                continue
+                
+            # Each bad actor has a chance to make a proposal this round
+            if random.random() < 0.7:  # 70% chance to act each round
+                proposal = self._create_bad_actor_proposal(actor)
+                proposals.append({
+                    "proposal": proposal,
+                    "actor": actor.name,
+                    "bribe_amount": proposal.bribe_amount,
+                    "target_department": proposal.target_department.value
+                })
+                
+                # Add to game state
+                self.game_state.pending_proposals.append(proposal)
+                
+                # Record on blockchain
+                self.game_state.add_blockchain_transaction(
+                    from_agent=actor.id,
+                    to_agent="mayor",
+                    transaction_type="bribe_attempt",
+                    amount=proposal.bribe_amount,
+                    data={
+                        "proposal_id": proposal.id,
+                        "description": proposal.description
+                    }
+                )
+                
+        return proposals
+    
+    def _create_bad_actor_proposal(self, actor: BadActor) -> PolicyProposal:
+        """Create a specific unsustainable policy proposal from a bad actor"""
+        target_dept = random.choice(actor.target_departments)
+        bribe_amount = random.randint(10000, min(100000, actor.corruption_budget))
+        
+        proposals_by_type = {
+            BadActorType.DEVELOPER_GROUP: {
+                Department.HOUSING: [
+                    ("Relax Building Codes", "Reduce environmental standards for faster construction", -15, 20, 10),
+                    ("Suburban Expansion", "Approve low-density sprawl development project", -20, 15, 15),
+                ],
+                Department.TRANSPORTATION: [
+                    ("Highway Expansion", "Build new car-centric infrastructure", -10, 25, 5),
+                    ("Parking Minimums", "Require more parking spaces in developments", -8, 12, 8),
+                ]
+            },
+            BadActorType.FOSSIL_FUEL_COMPANY: {
+                Department.ENERGY: [
+                    ("Gas Plant Extension", "Extend natural gas power plant operations", -25, 30, 20),
+                    ("Renewable Delays", "Postpone solar farm construction permits", -15, 10, 15),
+                ],
+                Department.TRANSPORTATION: [
+                    ("EV Tax Rollback", "Eliminate electric vehicle incentives", -12, 18, 12),
+                    ("Fuel Subsidies", "Increase gasoline subsidies for 'economic relief'", -18, 22, 25),
+                ]
+            },
+            BadActorType.CORPORATE_LOBBY: {
+                Department.WASTE: [
+                    ("Landfill Expansion", "Increase landfill capacity instead of recycling", -20, 15, 8),
+                    ("Recycling Cuts", "Reduce municipal recycling program funding", -15, 25, 10),
+                ],
+                Department.WATER: [
+                    ("Regulation Rollback", "Reduce water quality monitoring requirements", -18, 20, 12),
+                    ("Private Contracts", "Privatize water treatment facilities", -10, 30, 15),
+                ]
             }
-            return base_priority + crisis_bonus.get(thread.crisis_level, 0)
+        }
         
-        sorted_threads = sorted(active_threads, key=thread_importance, reverse=True)
-        return sorted_threads[:3]
+        proposal_options = proposals_by_type.get(actor.type, {}).get(target_dept, [])
+        if not proposal_options:
+            # Fallback generic proposal
+            title = f"Deregulation Initiative"
+            description = f"Reduce regulatory burden on {target_dept.value} sector"
+            sustainability_impact = -10
+            economic_impact = 15
+            political_impact = 8
+        else:
+            title, description, sustainability_impact, economic_impact, political_impact = random.choice(proposal_options)
+        
+        return PolicyProposal(
+            title=title,
+            description=description,
+            proposed_by=actor.id,
+            target_department=target_dept,
+            sustainability_impact=sustainability_impact,
+            economic_impact=economic_impact,
+            political_impact=political_impact,
+            bribe_amount=bribe_amount
+        )
+
+    def submit_player_proposal(self, title: str, description: str, 
+                             target_department: Department) -> PolicyProposal:
+        """Player submits a sustainability-focused policy proposal"""
+        
+        # Player proposals are designed to be sustainable (positive impact)
+        sustainability_impact = random.randint(8, 25)  # Always positive for player
+        economic_impact = random.randint(-5, 20)  # Can vary
+        political_impact = random.randint(-10, 15)  # Depends on political climate
+        
+        proposal = PolicyProposal(
+            title=title,
+            description=description,
+            proposed_by="player",
+            target_department=target_department,
+            sustainability_impact=sustainability_impact,
+            economic_impact=economic_impact,
+            political_impact=political_impact,
+            bribe_amount=0  # Player doesn't bribe
+        )
+        
+        self.game_state.pending_proposals.append(proposal)
+        
+        # Record on blockchain
+        self.game_state.add_blockchain_transaction(
+            from_agent="player",
+            to_agent="mayor",
+            transaction_type="policy_proposal",
+            data={
+                "proposal_id": proposal.id,
+                "title": title,
+                "sustainability_impact": sustainability_impact
+            }
+        )
+        
+        return proposal
+
+    def get_daily_digest(self) -> Dict:
+        """Get summary of current game state and blockchain activity"""
+        
+        recent_transactions = self.game_state.blockchain_transactions[-10:]  # Last 10 transactions
+        pending_proposals = len(self.game_state.pending_proposals)
+        
+        return {
+            "round_number": self.game_state.round_number,
+            "sustainability_index": self.game_state.sustainability_index,
+            "department_scores": dict(self.game_state.department_scores),
+            "mayor_trust": self.game_state.mayor_trust_in_player,
+            "bad_actor_influence": self.game_state.bad_actor_influence,
+            "pending_proposals": pending_proposals,
+            "recent_blockchain_activity": len(recent_transactions),
+            "win_conditions_check": self._check_win_conditions(),
+            "loss_conditions_check": self._check_loss_conditions()
+        }
     
     def process_player_action(self, action: PlayerAction) -> ActionOutcome:
         """
@@ -661,3 +857,93 @@ class GameEngine:
         # Clamp values
         self.game_state.city_health = max(0, min(100, self.game_state.city_health))
         self.game_state.approval = max(0, min(100, self.game_state.approval))
+    
+    # New methods for sustainability game
+    def _check_win_conditions(self) -> Dict:
+        """Check if any win conditions have been met"""
+        conditions = {
+            "sustainability_dominance": False,
+            "corruption_exposure": False, 
+            "rapid_transformation": False
+        }
+        
+        # Check sustainability dominance (85+ for 10 rounds)
+        if self.game_state.sustainability_index >= 85:
+            # This would need tracking over multiple rounds - simplified for now
+            conditions["sustainability_dominance"] = True
+        
+        # Check corruption exposure (simplified - track successful counters)
+        # This would need more complex tracking in real implementation
+        
+        # Check rapid transformation (30+ point increase in 5 rounds)
+        # This would need historical tracking in real implementation
+        
+        return conditions
+    
+    def _check_loss_conditions(self) -> Dict:
+        """Check if any loss conditions have been triggered"""
+        conditions = {
+            "corruption_takeover": self.game_state.sustainability_index < 40,
+            "trust_collapse": self.player_consecutive_rejections >= self.max_consecutive_rejections,
+            "department_rebellion": self._check_department_rebellion(),
+            "time_limit": self.game_state.round_number >= self.max_rounds
+        }
+        
+        return conditions
+    
+    def _check_department_rebellion(self) -> bool:
+        """Check if 4+ departments have scores below 30"""
+        low_scoring_depts = sum(1 for score in self.game_state.department_scores.values() if score < 30)
+        return low_scoring_depts >= 4
+    
+    def get_blockchain_analysis(self) -> Dict:
+        """Provide blockchain transaction analysis for player intelligence gathering"""
+        transactions = self.game_state.blockchain_transactions
+        
+        # Analyze bribe patterns
+        bribe_transactions = [t for t in transactions if t.transaction_type == "bribe_attempt"]
+        total_bribes = sum(t.amount or 0 for t in bribe_transactions)
+        
+        # Analyze policy impacts
+        policy_transactions = [t for t in transactions if t.transaction_type == "department_score_update"]
+        
+        # Recent bad actor activity
+        recent_bad_actor_activity = [
+            t for t in transactions[-20:] 
+            if t.from_agent in self.game_state.active_bad_actors.keys()
+        ]
+        
+        return {
+            "total_transactions": len(transactions),
+            "total_bribe_attempts": len(bribe_transactions),
+            "total_bribe_amount": total_bribes,
+            "policy_implementations": len(policy_transactions),
+            "recent_bad_actor_moves": len(recent_bad_actor_activity),
+            "corruption_evidence": [
+                {
+                    "transaction_id": t.id,
+                    "from": t.from_agent,
+                    "type": t.transaction_type,
+                    "amount": t.amount,
+                    "timestamp": t.timestamp.isoformat()
+                }
+                for t in bribe_transactions[-5:]  # Last 5 bribe attempts
+            ]
+        }
+    
+    def get_game_status(self) -> Dict:
+        """Get complete game status for UI display"""
+        return {
+            **self.get_daily_digest(),
+            "blockchain_analysis": self.get_blockchain_analysis(),
+            "active_bad_actors": {
+                actor.id: {
+                    "name": actor.name,
+                    "type": actor.type.value,
+                    "influence_power": actor.influence_power,
+                    "remaining_budget": actor.corruption_budget,
+                    "active": actor.active
+                }
+                for actor in self.game_state.active_bad_actors.values()
+            }
+        }
