@@ -38,6 +38,8 @@ from datetime import datetime
 
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
+from service.async_logger import AsyncLogger
+
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
@@ -86,8 +88,9 @@ AgentPersonality.get_system_prompt = get_system_prompt
 class LangChainAgentManager:
     """Manages LangChain-powered agents for the sustainability game"""
     
-    def __init__(self, use_openai: bool = True, temperature: float = 0.7):
+    def __init__(self, use_openai: bool = True, temperature: float = 0.7, logger: AsyncLogger = None):
         self.temperature = temperature
+        self.logger = logger or AsyncLogger()
         
         # Initialize LangChain LLM
         self.llm = None
@@ -146,7 +149,7 @@ class LangChainAgentManager:
         
         # Add multi-agent chat system
         from agents.multi_agent_chat import MultiAgentChatSystem
-        self.chat_system = MultiAgentChatSystem(self.agents)
+        self.chat_system = MultiAgentChatSystem(self.agents, logger=self.logger)
     
     async def evaluate_proposal_by_department(self, proposal: PolicyProposal, 
                                             department: Department,
@@ -212,7 +215,7 @@ class LangChainAgentManager:
                                           game_context: Dict[str, Any]) -> Dict[str, Any]:
         """New method: Independent political discussions then mayor decision"""
         
-        print(f"🏛️  Starting political maneuvering for: {proposal.title}")
+        self.logger.log(f"🏛️  Starting political maneuvering for: {proposal.title}")
         
         # Run the independent political discussion
         political_discussion = await self.chat_system.discuss_proposal(proposal, game_context)
@@ -232,7 +235,7 @@ class LangChainAgentManager:
                     }
         
         # Mayor makes final decision based on lobbying and political landscape
-        print("👑 Mayor making final decision based on political discussions and lobbying...")
+        self.logger.log("👑 Mayor making final decision based on political discussions and lobbying...")
         mayor_evaluation = await self._mayor_decide_after_politics(
             proposal, game_context, political_discussion
         )
