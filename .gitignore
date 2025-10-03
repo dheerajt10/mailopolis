@@ -61,3 +61,7 @@ Thumbs.db
 __pycache__/
 
 mailenv/
+
+backend/data/
+data/
+.playwright-mcp/
