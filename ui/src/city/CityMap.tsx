@@ -167,16 +167,20 @@ export const CityMap: React.FC<{ onOpenInbox?: (agentName: string, display?: str
     }, []);
 
     const handleBuildingClick = async (agent: string, label?: string) => {
-        if (!agent) return;
+        console.log('handleBuildingClick', agent, label);
         setActiveBuilding(agent);
-        if (onOpenInbox) {
+    
+        if (onOpenInbox && agent) {
             onOpenInbox(agent, label);
         }
+    
         try {
-            // Fire the API call on click so the network request is immediate
-            await apiService.getAgentInbox(agent);
-        } catch {
-            // ignore errors here; panel will handle its own loading/empty state
+            if (agent) {
+                console.log('getAgentInbox', agent);
+                await apiService.getAgentInbox(agent);
+            }
+        } catch (e) {
+            console.error('Error fetching inbox:', e);
         }
     };
 

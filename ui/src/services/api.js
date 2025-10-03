@@ -31,5 +31,23 @@ export const apiService = {
         const response = await apiClient.get('/maylopolis/personalities');
         return response.data;
     },
+    // // Get all agent inboxes
+    // async getAgentInboxes(): Promise<AgentInboxesResponse> {
+    //   const response = await apiClient.get('/maylopolis/inboxes');
+    //   return response.data;
+    // },
+    // Get a specific agent inbox summary with recent messages
+    async getAgentInbox(agentName) {
+        console.log('getAgentInbox in api.ts', agentName);
+        const response = await apiClient.get(`/maylopolis/inboxes/${encodeURIComponent(agentName)}`);
+        return response.data;
+    },
+    // Get messages for an agent (optionally limit)
+    async getAgentMessages(agentName, limit = 20) {
+        const response = await apiClient.get(`/maylopolis/inboxes/${encodeURIComponent(agentName)}/messages`, {
+            params: { limit, include_content: true },
+        });
+        return response.data;
+    },
 };
 export default apiService;

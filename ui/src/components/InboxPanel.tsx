@@ -116,6 +116,7 @@ export const InboxPanel: React.FC<InboxPanelProps> = ({ isOpen, onClose, agentNa
         const interval = window.setInterval(async () => {
             try {
                 const data = await apiService.getAgentInbox(agentName);
+                console.log('getAgentInbox', agentName);
                 if (!cancelled) {
                     setInbox(prev => {
                         if (!prev || prev.message_count !== data.message_count) return data;

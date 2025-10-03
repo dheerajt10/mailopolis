@@ -181,7 +181,9 @@ export const apiService = {
 
   // Get a specific agent inbox summary with recent messages
   async getAgentInbox(agentName: string): Promise<AgentInboxResponse> {
+    console.log('getAgentInbox in api.ts', agentName);
     const response = await apiClient.get(`/maylopolis/inboxes/${encodeURIComponent(agentName)}`);
+
     return response.data;
   },
 
