@@ -11,13 +11,13 @@ A strategy game about the real politics of sustainability. Instead of optimizing
 ## Technical architecture
 ```mermaid
 flowchart TD
-  subgraph Frontend[UI (React + Vite, TypeScript)]
+  subgraph Frontend["UI (React + Vite, TypeScript)"]
     CM[CityMap]
     IP[InboxPanel]
     LP[LogsPanel]
   end
 
-  subgraph Backend[Backend (FastAPI, Python)]
+  subgraph Backend["Backend (FastAPI, Python)"]
     API[API Layer]
     GE[Game Engine]
     AMS[AgentMail Service]
@@ -26,7 +26,7 @@ flowchart TD
 
   AM[(AgentMail API)]
   SOL[(Solana Ledger)]
-  MCP[MCP Server\nsolana/src/mcpServer.ts]
+  MCP["MCP Server\nsolana/src/mcpServer.ts"]
 
   CM -->|click building| IP
   IP -->|load agent inbox| API
